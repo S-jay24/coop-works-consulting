@@ -24,3 +24,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# OS & scratch files
+.DS_Store
+scratch/
+*.pem
+*serviceaccount*.json
+coop-works-*.json

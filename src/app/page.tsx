@@ -1,1395 +1,675 @@
 'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowRight, X, ExternalLink, Calculator, ChevronRight } from 'lucide-react';
 
-import React, { useState } from 'react';
-import {
-  TrendingUp,
-  ShieldCheck,
-  Building2,
-  Cpu,
-  Layers,
-  BarChart3,
-  Globe2,
-  Users,
-  CheckCircle2,
-  ArrowRight,
-  FileText,
-  Calculator,
-  Calendar,
-  X,
-  ChevronRight,
-  Sparkles,
-  Download,
-  Mail,
-  Award,
-  PieChart
-} from 'lucide-react';
+const C={bg:'#F7F1E3',bg2:'#EDE6D6',white:'#FFFFFF',dark:'#1C1813',mid:'#5A4A38',light:'#9A8878',amber:'#C8761A',amberL:'#E8934A',border:'rgba(28,24,19,0.10)',cream:'#F0E8D4'};
+const P={red:'#D32F2F',grad:'linear-gradient(135deg,#FFFDF6 0%,#FFF5EB 50%,#FFF0F0 100%)',glass:'rgba(255,255,255,0.75)',glassBdr:'rgba(211,47,47,0.15)',shadow:'0 8px 32px rgba(183,28,28,0.08)',text:'#1C1B1F',muted:'#625B71',success:'#2E7D32',warn:'#ED6C02',info:'#0288D1',font:"'Outfit','Inter',sans-serif",rSm:'8px',rMd:'16px'};
+type BC='red'|'green'|'amber'|'blue';
+const BM:{[k:string]:[string,string]}={red:[P.red,'rgba(211,47,47,0.1)'],green:[P.success,'rgba(46,125,50,0.1)'],amber:[P.warn,'rgba(237,108,2,0.1)'],blue:[P.info,'rgba(2,136,209,0.1)']};
+function PBadge({label,color}:{label:string;color:BC}){const[c,bg]=BM[color];return <span style={{background:bg,color:c,padding:'2px 8px',borderRadius:999,fontSize:'0.65rem',fontWeight:700,fontFamily:P.font,whiteSpace:'nowrap'}}>{label}</span>;}
+function PBtn({label,small=false,outline=false,onClick}:{label:string;small?:boolean;outline?:boolean;onClick?:()=>void}){return <button onClick={onClick} style={{background:outline?'transparent':P.red,color:outline?P.text:'white',border:outline?'1px solid rgba(0,0,0,0.15)':'none',borderRadius:P.rSm,padding:small?'0.18rem 0.5rem':'0.38rem 0.85rem',fontWeight:700,fontFamily:P.font,fontSize:small?'0.68rem':'0.78rem',cursor:'pointer',whiteSpace:'nowrap'}}>{label}</button>;}
+function PCard({children,style}:{children:React.ReactNode;style?:React.CSSProperties}){return <div style={{background:P.glass,backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)',border:`1px solid ${P.glassBdr}`,borderRadius:P.rMd,boxShadow:P.shadow,padding:'0.9rem',...style}}>{children}</div>;}
+function PM({icon,label,value,color=P.text}:{icon:string;label:string;value:string;color?:string}){return <div style={{background:'rgba(255,255,255,0.7)',border:'1px solid rgba(0,0,0,0.06)',borderRadius:10,padding:'0.55rem 0.75rem'}}><div style={{fontSize:'0.5rem',fontWeight:700,color:P.muted,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:2,fontFamily:P.font}}>{icon} {label}</div><div style={{fontSize:'0.95rem',fontWeight:800,color,fontFamily:P.font,lineHeight:1}}>{value}</div></div>;}
+function PT({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){return <div style={{background:'rgba(255,255,255,0.7)',borderRadius:10,border:'1px solid rgba(0,0,0,0.06)',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontFamily:P.font,fontSize:'0.68rem'}}><thead><tr style={{background:'rgba(255,255,255,0.9)'}}>{headers.map((h,i)=><th key={i} style={{padding:'0.4rem 0.65rem',textAlign:'left',color:P.muted,fontWeight:700,fontSize:'0.6rem',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>{h}</th>)}</tr></thead><tbody>{rows.map((row,i)=><tr key={i} style={{borderBottom:i<rows.length-1?'1px solid rgba(0,0,0,0.04)':'none',background:i%2===0?'transparent':'rgba(255,255,255,0.3)'}}>{row.map((cell,j)=><td key={j} style={{padding:'0.45rem 0.65rem',color:P.text,verticalAlign:'middle'}}>{cell}</td>)}</tr>)}</tbody></table></div>;}
 
-export default function HomePage() {
-  // Modal states
-  const [activePracticeModal, setActivePracticeModal] = useState<number | null>(null);
-  const [activeReportModal, setActiveReportModal] = useState<number | null>(null);
-  const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
+const GVF={sheds:[{id:'s1',name:'Kamareddy-Shed-A',capacity:8500,rent:12000,elec:4500,water:1800,active:1},{id:'s2',name:'Kamareddy-Shed-B',capacity:7800,rent:11000,elec:4200,water:1600,active:1},{id:'s3',name:'Nizamabad-Shed-1',capacity:9200,rent:14000,elec:5200,water:2100,active:1},{id:'s4',name:'Nizamabad-Shed-2',capacity:8000,rent:12500,elec:4800,water:1900,active:1}],batches:[{id:'b1',name:'GVF-B1',shedName:'Kamareddy-Shed-A',placed:8423,age:42,live:8201,mort:222,mortPct:2.6,avgWt:2210,fcr:1.63,feed:540,startDate:'07/08/2026'},{id:'b2',name:'GVF-B2',shedName:'Kamareddy-Shed-B',placed:7756,age:35,live:7621,mort:135,mortPct:1.7,avgWt:1840,fcr:1.64,feed:430,startDate:'14/08/2026'},{id:'b3',name:'GVF-B3',shedName:'Nizamabad-Shed-1',placed:9100,age:28,live:9014,mort:86,mortPct:0.9,avgWt:1120,fcr:1.61,feed:285,startDate:'21/08/2026'},{id:'b4',name:'GVF-B4',shedName:'Nizamabad-Shed-2',placed:7980,age:15,live:7965,mort:15,mortPct:0.2,avgWt:420,fcr:1.58,feed:96,startDate:'03/09/2026'}],harvests:[{id:'h1',batch:'GVF-H3',shed:'Nizamabad-Shed-2',date:'22/07/2026',birds:7845,avgWt:2.24,totalKg:17573,rate:122,settlement:2143906},{id:'h2',batch:'GVF-H2',shed:'Kamareddy-Shed-A',date:'05/07/2026',birds:8312,avgWt:2.19,totalKg:18203,rate:118,settlement:2147954},{id:'h3',batch:'GVF-H1',shed:'Kamareddy-Shed-B',date:'18/06/2026',birds:7634,avgWt:2.21,totalKg:16871,rate:115,settlement:1940165}],feedLots:[{id:'l1',lot:'LOT-009',date:'14/09',cost:198400,preS:'0/20',starter:'—',finisher:'0/65',status:'ACTIVE'},{id:'l2',lot:'LOT-008',date:'07/09',cost:512000,preS:'0/25',starter:'8/110',finisher:'0/110',status:'ACTIVE'},{id:'l3',lot:'LOT-007',date:'01/09',cost:489600,preS:'0/60',starter:'0/90',finisher:'0/90',status:'DEPLETED'}],health:[{batch:'GVF-B2',date:'10/09',shed:'Kamareddy-Shed-B',med:'Refit Forte',type:'VITAMINS',cost:1200},{batch:'GVF-B2',date:'10/09',shed:'Kamareddy-Shed-B',med:'Terramycin',type:'ANTIBIOTIC',cost:2800},{batch:'GVF-B1',date:'02/09',shed:'Kamareddy-Shed-A',med:'Immune Boost Plus',type:'VITAMINS',cost:1500},{batch:'GVF-B3',date:'28/08',shed:'Nizamabad-Shed-1',med:'Vimeral Forte',type:'VITAMINS',cost:800}],accounting:[{batch:'GVF-H3',shed:'Nizamabad-Shed-2',status:'HARVESTED',exp:1724000,revenue:2143906,profit:419906},{batch:'GVF-H2',shed:'Kamareddy-Shed-A',status:'HARVESTED',exp:1821000,revenue:2147954,profit:326954},{batch:'GVF-H1',shed:'Kamareddy-Shed-B',status:'HARVESTED',exp:1585000,revenue:1940165,profit:355165},{batch:'GVF-B1',shed:'Kamareddy-Shed-A',status:'GROWING',exp:1184500,revenue:0,profit:-1184500},{batch:'GVF-B2',shed:'Kamareddy-Shed-B',status:'GROWING',exp:842000,revenue:0,profit:-842000}],logs:[{date:'17/09',shed:'Kamareddy-Shed-A',batch:'GVF-B1',logger:'Ravi Kumar',mort:3,starter:'—',finisher:'18 bags',fpb:188.2},{date:'17/09',shed:'Kamareddy-Shed-B',batch:'GVF-B2',logger:'Ravi Kumar',mort:2,starter:'—',finisher:'15 bags',fpb:156.8},{date:'17/09',shed:'Nizamabad-Shed-1',batch:'GVF-B3',logger:'Suresh M.',mort:1,starter:'—',finisher:'12 bags',fpb:106.4}],roles:[{name:'Co-Owner',desc:'1 user(s)'},{name:'Admin',desc:'Full access. 1 user(s)'},{name:'Field Manager',desc:'2 user(s)'},{name:'Logger',desc:'3 user(s)'}],users:[{name:'Prakash Reddy',email:'prakash@greenvalley.in',role:'OWNER'},{name:'Venkat R.',email:'venkat@greenvalley.in',role:'MANAGER'},{name:'Suresh M.',email:'suresh@greenvalley.in',role:'MANAGER'},{name:'Ravi Kumar',email:'ravi@greenvalley.in',role:'LOGGER'}]};
 
-  // ROI Calculator state
-  const [industry, setIndustry] = useState('Manufacturing & Operations');
-  const [annualRevenue, setAnnualRevenue] = useState(150); // Millions $
-  const [optimizationGoal, setOptimizationGoal] = useState('EBITDA Expansion & Cost Optimization');
+const TAB_INFO:Record<string,{title:string;desc:string}>={OVERVIEW:{title:'Farm Overview',desc:'A live dashboard of every KPI — FCR, mortality, livability, EPEF and total active birds across all sheds in real time.'},SHEDS:{title:'Shed Management',desc:'Register all sheds with capacity, rent, electricity and water. Each shed auto-factors into batch P&L.'},BATCHES:{title:'Bird Batches',desc:'Track every batch from Day 1 — placement, age, live birds, mortality, average weight, FCR and feed consumed.'},FEED:{title:'Feed Lot Tracking',desc:'Every feed procurement logged as a lot — date, types, bags received, cost per bag, transport and labour.'},HARVESTS:{title:'Harvest Records',desc:'Record every harvest with birds collected, average weight, rate per kg, and net settlement.'},HEALTH:{title:'Flock Health Logs',desc:'Log every medication event or vaccination per batch. Total health cost accumulated automatically.'},ACCOUNTING:{title:'Accounting & P&L',desc:'Full batch-wise financial statements — chick cost, feed, health, overheads, revenue, net P&L and ROI.'},LOGS:{title:'Daily Logs',desc:"Field workers log mortality, culls and feed bags in under 2 minutes. Timestamped and photo-verified."},ACCESS:{title:'Access Management',desc:'Create custom roles with granular read/write permissions. Invite managers, loggers and partners.'}};
 
-  // Form submission state
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    role: '',
-    revenue: '$100M - $500M',
-    interest: 'Corporate Strategy & M&A',
-    message: ''
-  });
+function PRPOverview({onBatch}:{onBatch:(b:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Farm Summary</div><div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'0.35rem',marginBottom:'0.4rem'}}><PM icon="🏷️" label="Lifted" value="3" color="#E64A19"/><PM icon="💸" label="Expense" value="Rs51.3L" color={P.red}/><PM icon="💰" label="Revenue" value="Rs62.3L" color={P.success}/><PM icon="📈" label="Net P/L" value="+Rs11.0L" color={P.success}/></div><div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'0.35rem'}}><PM icon="🌾" label="Feed" value="Rs35.6L" color="#795548"/><PM icon="🐥" label="Chicks" value="Rs11.2L" color="#F57F17"/><PM icon="💊" label="Health" value="Rs34,500" color="#1565C0"/><PM icon="👷" label="Labour" value="Rs2.80L" color="#1565C0"/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Production Averages</div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="📊" label="FCR" value="1.58" color="#1565C0"/><PM icon="💀" label="Mortality" value="1.20%" color={P.success}/><PM icon="⚖️" label="Avg Wt" value="2.25 kg" color={P.success}/><PM icon="📅" label="Avg Days" value="41.5 d" color="#1565C0"/><PM icon="⚡" label="EPEF" value="300" color={P.success}/><PM icon="✅" label="Livability" value="98.80%" color={P.success}/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.5rem'}}>Active Batches</div><PT headers={['Batch','Shed','Age','Placed','Live','Mort%','Avg Wt','FCR','']} rows={GVF.batches.map(b=>[<span key="n" style={{fontWeight:700}}>{b.name}</span>,b.shedName,`${b.age}d`,b.placed.toLocaleString('en-IN'),b.live.toLocaleString('en-IN'),<span key="m" style={{color:b.mortPct>3?P.red:P.warn,fontWeight:700}}>{b.mortPct}%</span>,`${b.avgWt}g`,<span key="f" style={{color:b.fcr<=1.65?P.success:P.red,fontWeight:700}}>{b.fcr.toFixed(2)}</span>,<PBtn key="v" label="View" small onClick={()=>onBatch(b)}/>])}/></PCard></div>;}
+function PRPSheds({onManage}:{onManage:(s:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Sheds</div><PBtn label="+ New Shed"/></div><PCard style={{padding:0}}><div style={{padding:'0.35rem'}}>{GVF.sheds.map(s=><div key={s.id} style={{background:'rgba(255,255,255,0.7)',padding:'0.55rem 0.75rem',borderRadius:P.rSm,marginBottom:'0.28rem',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem'}}>{s.name}</div><div style={{fontFamily:P.font,fontSize:'0.65rem',color:P.muted}}>Capacity: {s.capacity.toLocaleString()}</div></div><div style={{display:'flex',gap:'0.3rem',alignItems:'center'}}><PBadge label={`${s.active} Active`} color="red"/><PBtn label="Manage" small onClick={()=>onManage(s)}/></div></div>)}</div></PCard></div>;}
+function PRPShedDetail({shed}:{shed:any}){const ab=GVF.batches.find(b=>b.shedName===shed.name);return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>{shed.name}</div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="🐔" label="Capacity" value={shed.capacity.toLocaleString()}/><PM icon="⚡" label="Active" value={`${shed.active}`} color={P.red}/><PM icon="💰" label="Monthly OH" value={`Rs${(shed.rent+shed.elec+shed.water).toLocaleString()}`}/></div>{ab&&<PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem'}}>{ab.name} — Age: {ab.age}d · FCR: {ab.fcr}</div></PCard>}</div>;}
+function PRPBatches({onManage}:{onManage:(b:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Bird Batches</div><PBtn label="New Batch"/></div><PCard style={{padding:0}}><PT headers={['Batch','Shed','Started','Age','Placed','Live','Mort%','Avg Wt','FCR','Status','']} rows={GVF.batches.map(b=>[<span key="n" style={{fontWeight:700}}>{b.name}</span>,b.shedName,b.startDate,`${b.age}d`,b.placed.toLocaleString('en-IN'),<span key="l" style={{color:P.success,fontWeight:700}}>{b.live.toLocaleString('en-IN')}</span>,<span key="m" style={{color:b.mortPct>3?P.red:P.warn,fontWeight:700}}>{b.mortPct}%</span>,`${b.avgWt}g`,<span key="f" style={{color:b.fcr<=1.65?P.success:P.red,fontWeight:700}}>{b.fcr.toFixed(2)}</span>,<PBadge key="s" label="GROWING" color="amber"/>,<PBtn key="btn" label="Manage" small onClick={()=>onManage(b)}/>])}/></PCard></div>;}
+function PRPBatchDetail({batch}:{batch:any}){const samples=[{day:7,wt:165},{day:14,wt:420},{day:21,wt:830},{day:28,wt:1220},{day:35,wt:1680},{day:42,wt:2180}].filter(s=>s.day<=batch.age);const maxWt=Math.max(...samples.map(s=>s.wt),1);return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>{batch.name}</div><PBadge label="GROWING" color="amber"/></div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="🐥" label="Placed" value={batch.placed.toLocaleString()}/><PM icon="✅" label="Live" value={batch.live.toLocaleString()} color={P.success}/><PM icon="💀" label="Mortality" value={`${batch.mort} (${batch.mortPct}%)`} color={batch.mortPct>3?P.red:P.warn}/><PM icon="⚖️" label="Avg Wt" value={`${batch.avgWt}g`}/><PM icon="📊" label="FCR" value={batch.fcr.toFixed(2)} color={batch.fcr<=1.65?P.success:P.red}/><PM icon="📅" label="Age" value={`${batch.age} days`}/></div>{samples.length>0&&<PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.8rem',marginBottom:'0.55rem'}}>Weight Trend</div><div style={{display:'flex',gap:'0.35rem',alignItems:'flex-end',height:65}}>{samples.map((s,i)=><div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2}}><div style={{fontFamily:P.font,fontSize:'0.48rem',color:P.muted}}>{s.wt}g</div><div style={{width:'100%',height:`${Math.max(6,(s.wt/maxWt)*48)}px`,background:`linear-gradient(180deg,${P.success},#1B5E20)`,borderRadius:'3px 3px 0 0'}}/><div style={{fontFamily:P.font,fontSize:'0.48rem',color:P.muted}}>D{s.day}</div></div>)}</div></PCard>}<PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.8rem',marginBottom:'0.45rem'}}>Recent Logs</div><PT headers={['Date','Logger','Mort.','Finisher','Feed/Bird']} rows={GVF.logs.filter(l=>l.batch===batch.name).map(l=>[l.date,l.logger,<span key="m" style={{color:l.mort>5?P.red:P.text,fontWeight:700}}>{l.mort}</span>,l.finisher,`${l.fpb}g`])}/></PCard></div>;}
+function PRPFeed(){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Feed Lots</div><PBtn label="New Lot"/></div><PCard style={{padding:0}}><PT headers={['Lot ID','Date','Total Cost','Pre-Starter','Starter','Finisher','Status']} rows={GVF.feedLots.map(l=>[<span key="n" style={{fontWeight:700}}>{l.lot}</span>,l.date,`Rs${l.cost.toLocaleString('en-IN')}`,l.preS,l.starter,l.finisher,<PBadge key="s" label={l.status} color={l.status==='ACTIVE'?'red':'blue'}/>])}/></PCard></div>;}
+function PRPHarvests(){const tr=GVF.harvests.reduce((s,h)=>s+h.settlement,0);return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Harvests</div><PBtn label="+ Record Harvest"/></div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="⚖️" label="Total Kg" value={`${GVF.harvests.reduce((s,h)=>s+h.totalKg,0).toLocaleString()} kg`} color={P.success}/><PM icon="💰" label="Revenue" value={`Rs${(tr/100000).toFixed(1)}L`} color={P.success}/><PM icon="📊" label="Avg Rate" value="Rs118.3/kg" color="#1565C0"/></div><PCard style={{padding:0}}><PT headers={['Ref','Shed','Date','Birds','Total Kg','Rate/kg','Settlement']} rows={GVF.harvests.map(h=>[<span key="n" style={{fontWeight:700}}>{h.batch}</span>,h.shed,h.date,h.birds.toLocaleString('en-IN'),`${h.totalKg.toLocaleString()} kg`,`Rs${h.rate}`,`Rs${h.settlement.toLocaleString('en-IN')}`])}/></PCard></div>;}
+function PRPHealth(){const total=GVF.health.reduce((s,h)=>s+h.cost,0);return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Flock Health</div><PBtn label="+ Log Event"/></div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="💊" label="Med Events" value={`${GVF.health.length}`} color="#1565C0"/><PM icon="🦠" label="Disease Events" value="0" color={P.success}/><PM icon="💰" label="Health Cost" value={`Rs${total.toLocaleString()}`} color={P.red}/></div><PCard style={{padding:0}}><PT headers={['Batch','Date','Shed','Medicine','Type','Cost']} rows={GVF.health.map(h=>[h.batch,h.date,h.shed,<span key="m" style={{fontWeight:700}}>{h.med}</span>,<PBadge key="t" label={h.type} color={h.type==='ANTIBIOTIC'?'red':h.type==='VITAMINS'?'blue':'amber'}/>,`Rs${h.cost.toLocaleString()}`])}/></PCard></div>;}
+function PRPAccounting({onManage}:{onManage:(a:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Accounting & P&L</div><div style={{fontSize:'0.62rem',color:P.muted}}>Batch financial performance & net margins</div></div><PBtn label="Export" small/></div><PCard style={{padding:0}}><PT headers={['Batch','Shed','Status','Total Expense','Net P/L','']} rows={GVF.accounting.map(a=>[<span key="n" style={{fontWeight:700}}>{a.batch}</span>,a.shed,<PBadge key="s" label={a.status} color={a.status==='HARVESTED'?'green':'amber'}/>,<span key="e" style={{color:P.text,fontWeight:700}}>Rs{a.exp.toLocaleString('en-IN')}</span>,<span key="pl" style={{color:a.profit>0?P.success:P.red,fontWeight:800}}>{a.profit>0?`+Rs${(a.profit/100000).toFixed(2)}L`:`-Rs${(Math.abs(a.profit)/100000).toFixed(2)}L`}</span>,<PBtn key="btn" label="View" small onClick={()=>onManage(a)}/>])}/></PCard></div>;}
+function PRPAccountingDetail({a}:{a:any}){const entries=[{cat:'Chick Placement Cost',exp:Math.round(a.exp*0.28)},{cat:'Feed (Pre-Starter, Starter, Finisher)',exp:Math.round(a.exp*0.62)},{cat:'Health & Veterinary Oversight',exp:Math.round(a.exp*0.03)},{cat:'Farm Labour & Overheads',exp:Math.round(a.exp*0.07)}];return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>{a.batch} P&L Statement</div><PBadge label={a.status} color={a.status==='HARVESTED'?'green':'amber'}/></div>{a.revenue>0&&<div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="💰" label="Gross Revenue" value={`Rs${(a.revenue/100000).toFixed(2)}L`} color={P.success}/><PM icon="💸" label="Total Expense" value={`Rs${(a.exp/100000).toFixed(2)}L`} color={P.red}/><PM icon="📈" label="Net Profit" value={`+Rs${(a.profit/100000).toFixed(2)}L`} color={P.success}/></div>}<PCard style={{padding:0}}><PT headers={['Category','Expense']} rows={entries.map(e=>[<span key="c" style={{fontWeight:700}}>{e.cat}</span>,<span key="v" style={{color:P.red,fontWeight:700}}>Rs{e.exp.toLocaleString('en-IN')}</span>])}/></PCard></div>;}
+function PRPLogs(){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Daily Logs</div><PBtn label="+ New Entry"/></div><PCard style={{padding:0}}><PT headers={['Date','Shed','Batch','Logger','Mort.','Starter','Finisher','Feed/Bird']} rows={GVF.logs.map(l=>[l.date,<span key="s" style={{color:P.red,fontWeight:700}}>{l.shed}</span>,l.batch,l.logger,<span key="m" style={{fontWeight:700,color:l.mort>5?P.red:l.mort>0?P.warn:P.success}}>{l.mort}</span>,l.starter,l.finisher,`${l.fpb}g`])}/></PCard></div>;}
+function PRPAccess(){const[sub,setSub]=useState('ROLES');return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Access Management</div><div style={{display:'flex',gap:'0.35rem'}}>{['USERS','ROLES','KEYS'].map(k=><button key={k} onClick={()=>setSub(k)} style={{padding:'0.28rem 0.72rem',borderRadius:999,fontFamily:P.font,fontSize:'0.7rem',fontWeight:700,border:`1px solid ${sub===k?P.red:'rgba(0,0,0,0.12)'}`,background:sub===k?P.red:'transparent',color:sub===k?'white':P.muted,cursor:'pointer'}}>{k}</button>)}</div>{sub==='ROLES'&&<PCard>{GVF.roles.map((r,i)=><div key={r.name} style={{padding:'0.45rem 0',borderBottom:i<GVF.roles.length-1?'1px solid rgba(0,0,0,0.06)':'none',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem'}}>{r.name}</div><div style={{fontFamily:P.font,fontSize:'0.62rem',color:P.muted}}>{r.desc}</div></div><PBtn label="Edit" small outline/></div>)}</PCard>}{sub==='USERS'&&<PCard style={{padding:0}}><PT headers={['User','Email','Role','Status']} rows={GVF.users.map(u=>[u.name,u.email,<PBadge key="r" label={u.role} color={u.role==='OWNER'?'red':u.role==='MANAGER'?'amber':'blue'}/>,<PBadge key="s" label="ACTIVE" color="green"/>])}/></PCard>}{sub==='KEYS'&&<PCard>{GVF.sheds.map((s,i)=><div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.4rem 0',borderBottom:i<GVF.sheds.length-1?'1px solid rgba(0,0,0,0.06)':'none'}}><span style={{fontFamily:P.font,fontWeight:700,fontSize:'0.78rem'}}>{s.name}</span><PBtn label="Revoke" small outline/></div>)}</PCard>}</div>;}
 
-  // Calculate estimated ROI
-  const calculatedSavings = Math.round(annualRevenue * 0.082 * 10) / 10; // $M
-  const calculatedRevenueUplift = Math.round(annualRevenue * 0.125 * 10) / 10; // $M
-  const estimatedPaybackMonths = 4.2;
+const PRP_TABS=[{id:'OVERVIEW',label:'Overview'},{id:'SHEDS',label:'Sheds'},{id:'BATCHES',label:'Batches'},{id:'FEED',label:'Feed'},{id:'HARVESTS',label:'Harvests'},{id:'HEALTH',label:'Health'},{id:'ACCOUNTING',label:'Accounting'},{id:'LOGS',label:'Logs'},{id:'ACCESS',label:'Access'}];
+function PRPDemoApp({tab,onTab}:{tab:string;onTab:(t:string)=>void}){const[detail,setDetail]=useState<any>(null);const switchTab=(t:string)=>{onTab(t);setDetail(null);};return <div style={{fontFamily:P.font,background:P.grad,display:'flex',flexDirection:'column',height:'100%',minHeight:480}}><div style={{background:'rgba(255,255,255,0.92)',borderBottom:`1px solid ${P.glassBdr}`,padding:'0.45rem 0.85rem',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}><div><div style={{fontSize:'0.5rem',fontWeight:700,color:P.red,letterSpacing:'0.1em',textTransform:'uppercase'}}>GREEN VALLEY FARMS</div><div style={{fontSize:'0.8rem',fontWeight:700,color:P.text}}>Poultry Resource Planner</div></div><div style={{fontSize:'0.6rem',color:P.muted}}>Logged in</div></div><div style={{display:'flex',gap:'0.18rem',padding:'0.3rem 0.5rem',overflowX:'auto',background:'rgba(255,255,255,0.7)',borderBottom:`1px solid rgba(211,47,47,0.08)`,flexShrink:0}}>{PRP_TABS.map(t=><button key={t.id} onClick={()=>switchTab(t.id)} style={{background:tab===t.id?P.red:'transparent',color:tab===t.id?'white':P.muted,border:tab===t.id?'none':'1px solid rgba(0,0,0,0.08)',borderRadius:P.rSm,padding:'0.18rem 0.45rem',fontWeight:700,fontFamily:P.font,fontSize:'0.58rem',cursor:'pointer',whiteSpace:'nowrap',transition:'all 150ms'}}>{t.label}</button>)}</div><div style={{flex:1,padding:'0.6rem 0.75rem',overflowY:'auto'}}>{detail&&<button onClick={()=>setDetail(null)} style={{background:'rgba(255,255,255,0.7)',border:'1px solid rgba(0,0,0,0.1)',borderRadius:P.rSm,padding:'0.2rem 0.55rem',fontFamily:P.font,fontSize:'0.65rem',fontWeight:600,cursor:'pointer',marginBottom:'0.5rem'}}>Back</button>}{tab==='OVERVIEW'&&<PRPOverview onBatch={b=>{switchTab('BATCHES');setDetail(b);}}/>}{tab==='SHEDS'&&!detail&&<PRPSheds onManage={setDetail}/>}{tab==='SHEDS'&&detail&&<PRPShedDetail shed={detail}/>}{tab==='BATCHES'&&!detail&&<PRPBatches onManage={setDetail}/>}{tab==='BATCHES'&&detail&&<PRPBatchDetail batch={detail}/>}{tab==='FEED'&&<PRPFeed/>}{tab==='HARVESTS'&&<PRPHarvests/>}{tab==='HEALTH'&&<PRPHealth/>}{tab==='ACCOUNTING'&&!detail&&<PRPAccounting onManage={setDetail}/>}{tab==='ACCOUNTING'&&detail&&<PRPAccountingDetail a={detail}/>}{tab==='LOGS'&&<PRPLogs/>}{tab==='ACCESS'&&<PRPAccess/>}</div></div>;}
 
-  // Practice Areas Data
-  const practiceAreas = [
-    {
-      id: 1,
-      icon: TrendingUp,
-      title: 'Corporate Strategy & M&A Advisory',
-      subtitle: 'Portfolio Acceleration & Growth Strategy',
-      summary: 'We partner with enterprise leaders and private equity boards to evaluate growth vectors, perform commercial due diligence, and execute post-merger integration playbooks.',
-      deliverables: [
-        'Growth Vector Identification & Market Sizing',
-        'Buy-Side & Sell-Side Commercial Due Diligence',
-        'Post-Merger Integration (PMI) 100-Day Playbook',
-        'Capital Allocation & Business Model Optimization'
-      ],
-      impactMetric: 'Average 3.4x valuation uplift post-engagement'
-    },
-    {
-      id: 2,
-      icon: Cpu,
-      title: 'AI & Digital Transformation',
-      subtitle: 'Enterprise Technology Modernization',
-      summary: 'Architecting scalable AI infrastructure, modernizing legacy enterprise software, and embedding machine learning workflows into core operational processes.',
-      deliverables: [
-        'Executive AI Readiness & ROI Roadmap',
-        'Generative AI Enterprise Governance & Architecture',
-        'Legacy Stack Modernization & Cloud Optimization',
-        'Data Governance & Predictive Analytics Engines'
-      ],
-      impactMetric: '74% reduction in manual operational latency'
-    },
-    {
-      id: 3,
-      icon: Layers,
-      title: 'Operational Excellence & Supply Chain',
-      subtitle: 'Cost Restructuring & Resilient Supply Networks',
-      summary: 'Re-engineering end-to-end supply chains, restructuring fixed overhead, and deploying lean operational frameworks across multi-national footprints.',
-      deliverables: [
-        'Zero-Based Cost Restructuring & SG&A Rationalization',
-        'Global Supply Chain Risk & Logistics Optimization',
-        'Procurement Synergies & Vendor Rationalization',
-        'Smart Manufacturing & Process Automation'
-      ],
-      impactMetric: '$140M+ cumulative cost savings delivered'
-    },
-    {
-      id: 4,
-      icon: BarChart3,
-      title: 'Private Equity Value Creation',
-      subtitle: 'Portfolio Turnaround & Exit Readiness',
-      summary: 'Driving aggressive EBITDA expansion for PE portfolio companies during investment horizons through targeted operational interventions.',
-      deliverables: [
-        'Pre-Acquisition Value Creation Modeling',
-        'Rapid 90-Day Operational Performance Sprints',
-        'Working Capital & Cash Flow Optimization',
-        'Exit Positioning & Strategic Equity Storytelling'
-      ],
-      impactMetric: '28.6% average internal rate of return (IRR) enhancement'
-    },
-    {
-      id: 5,
-      icon: ShieldCheck,
-      title: 'ESG & Sustainable Governance',
-      subtitle: 'Decarbonization & Strategic Compliance',
-      summary: 'Transforming ESG obligations into competitive advantages through decarbonization frameworks, regulatory audit readiness, and sustainable supply chains.',
-      deliverables: [
-        'Scope 1-3 Decarbonization & Carbon Offset Strategy',
-        'CSRD & SEC Climate Disclosure Audit Readiness',
-        'Sustainable Procurement & Supply Chain Tracing',
-        'Board Governance & Executive Stewardship Metrics'
-      ],
-      impactMetric: '100% regulatory audit pass rate across 30+ clients'
-    },
-    {
-      id: 6,
-      icon: Users,
-      title: 'Organizational Design & Executive Talent',
-      subtitle: 'Leadership Alignment & Agile Transformation',
-      summary: 'Designing high-performance organizational structures, aligning C-suite incentives with value creation goals, and navigating complex change management.',
-      deliverables: [
-        'Operating Model & Org Architecture Redesign',
-        'C-Suite & Board Executive Leadership Coaching',
-        'Performance Compensation & Incentive Alignment',
-        'Agile Enterprise Scaling & Culture Transformation'
-      ],
-      impactMetric: '94% executive retention during restructuring'
-    }
-  ];
+function useScrollReveal(){
+  useEffect(()=>{
+    const els = document.querySelectorAll('.rv, .rv-left, .rv-right');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.classList.add('vis');
+          obs.unobserve(e.target);
+        }
+      });
+    },{ threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  },[]);
+}
 
-  // Reports & Insights Data
-  const reports = [
-    {
-      id: 1,
-      title: '2026 Executive AI Readiness Index',
-      type: 'Global Benchmarking Report',
-      date: 'Q3 2026 Release',
-      pages: '48 Pages',
-      abstract: 'A definitive study of 450 global enterprise CEOs analyzing GenAI ROI, infrastructure bottlenecks, and organizational deployment frameworks.',
-      keyTakeaways: [
-        'Only 14% of enterprises have achieved positive net EBITDA from GenAI pilots.',
-        'Architecture governance is the single largest differentiator between scalable deployments and failed POCs.',
-        'Leading firms re-allocate 22% of legacy IT budgets into real-time decision engines.'
-      ]
-    },
-    {
-      id: 2,
-      title: 'Navigating Supply Chain Volatility',
-      type: 'Executive White Paper',
-      date: 'Q2 2026 Release',
-      pages: '36 Pages',
-      abstract: 'Strategic playbook for C-suite leaders re-shoring manufacturing footprints and building near-shore supply chain resilience in volatile trade regimes.',
-      keyTakeaways: [
-        'Dual-sourcing strategies reduce disruption penalties by up to 68%.',
-        'Predictive supply chain monitoring yields an average 3.8x ROI within 9 months.',
-        'Inventory buffer optimization frees up an average of $24M in working capital per $1B in revenue.'
-      ]
-    },
-    {
-      id: 3,
-      title: 'Private Equity Value Creation Playbook',
-      type: 'Special Advisory Insights',
-      date: 'Q3 2026 Release',
-      pages: '42 Pages',
-      abstract: 'Examining how top-decile PE sponsors drive operational EBITDA expansion amidst higher cost of capital and compressed exit multiples.',
-      keyTakeaways: [
-        'Operational improvements drive 72% of total equity returns in high-interest rate cycles.',
-        'Early working capital optimization expands EBITDA margins by 180-320 basis points.',
-        'Digital margin expansion outweighs traditional head-count reduction strategies by 3:1.'
-      ]
-    }
-  ];
+type BV = 'solid' | 'outline' | 'ghost';
 
-  // Case Studies
-  const caseStudies = [
-    {
-      client: 'Fortune 500 Industrial Equipment Manufacturer',
-      headline: '$140M Annual EBITDA Expansion via Supply Chain Optimization',
-      sector: 'Industrial & Manufacturing',
-      challenge: 'Fragmented global supply networks and rising raw material costs eroded operating margins by 420 bps.',
-      solution: 'Coop Works restructured procurement categories, deployed AI inventory prediction, and consolidated supplier hubs across 18 countries.',
-      results: [
-        '$140M recurring annual EBITDA improvement',
-        '28% reduction in global inventory hold times',
-        '100% delivery reliability score across Tier-1 clients'
-      ]
-    },
-    {
-      client: 'Tier-1 FinTech & Banking Platform',
-      headline: '74% Reduction in Onboarding Latency with Enterprise AI Architecture',
-      sector: 'Financial Services',
-      challenge: 'Legacy compliance workflows created a 14-day customer onboarding delay, leading to high drop-off rates.',
-      solution: 'Engineered an automated risk-scoring pipeline and modern microservices architecture with strict regulatory safeguards.',
-      results: [
-        'Onboarding time reduced from 14 days to 4 hours',
-        '$68M in net new ARR captured within 12 months',
-        'Zero compliance audit findings post-launch'
-      ]
-    },
-    {
-      client: 'Leading Healthcare Services Network',
-      headline: '3.2x Valuation Multiplier Growth Ahead of Successful IPO',
-      sector: 'Healthcare & Life Sciences',
-      challenge: 'Inconsistent hospital unit economics and stagnant operational throughput across 85 regional facilities.',
-      solution: 'Implemented standardized clinical resource scheduling, optimized payer contract structures, and streamlined SG&A overhead.',
-      results: [
-        '3.2x valuation multiplier increase upon public listing',
-        '240 bps margin expansion across all operating units',
-        'Ranked #1 in regional patient care quality metrics'
-      ]
-    }
-  ];
+function MinBtn({label,icon,onClick,variant='solid'}:{label:string;icon?:React.ReactNode;onClick?:()=>void;variant?:BV}){const vs:{[k:string]:React.CSSProperties}={solid:{background:C.amber,color:'#fff',border:'none',boxShadow:'0 2px 12px rgba(200,118,26,0.28)'},outline:{background:'transparent',color:C.dark,border:`1.5px solid ${C.dark}`,boxShadow:'none'},ghost:{background:'transparent',color:C.amber,border:`1.5px solid ${C.amber}`,boxShadow:'none'}};return <button onClick={onClick} style={{display:'inline-flex',alignItems:'center',gap:6,fontFamily:'"Inter",sans-serif',fontWeight:600,fontSize:'0.85rem',cursor:'pointer',borderRadius:4,padding:'0.6rem 1.4rem',transition:'all 180ms',...vs[variant]}}>{label}{icon}</button>;}
 
-  // Leadership Team
-  const leadership = [
-    {
-      name: 'Alexander Vance',
-      title: 'Senior Managing Director & Co-Founder',
-      pedigree: 'Ex-McKinsey Principal | MBA, Harvard Business School',
-      expertise: 'Corporate Strategy, M&A Advisory & Board Governance',
-      bio: '20+ years advising Fortune 100 CEOs and Private Equity sponsors on multi-billion dollar strategic transformations and portfolio turnarounds.'
-    },
-    {
-      name: 'Dr. Elena Rostova',
-      title: 'Partner & Global Head of AI & Digital Practice',
-      pedigree: 'Ex-BCG Digital Ventures Director | Ph.D. Computer Science, MIT',
-      expertise: 'Enterprise AI Infrastructure, Cloud Architecture & Machine Learning',
-      bio: 'Pioneer in operationalizing machine learning models for global financial institutions and complex industrial supply networks.'
-    },
-    {
-      name: 'Marcus Sterling',
-      title: 'Managing Director, Operational Excellence',
-      pedigree: 'Ex-Bain Partner | B.S. Engineering, Stanford University',
-      expertise: 'Supply Chain Resiliency, Zero-Based Costing & Lean Operations',
-      bio: 'Directly oversaw over $1.2B in cumulative cost restructuring and supply chain modernization programs across 30+ countries.'
-    }
-  ];
+function Navbar({onContact}:{onContact:()=>void}){const[sc,setSc]=useState(false);useEffect(()=>{const h=()=>setSc(window.scrollY>50);window.addEventListener('scroll',h,{passive:true});return()=>window.removeEventListener('scroll',h);},[]);const go=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'});return <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:1000,padding:'0.85rem 0',background:sc?'rgba(247,241,227,0.96)':'transparent',backdropFilter:sc?'blur(12px)':'none',boxShadow:sc?`0 1px 0 ${C.border}`:'none',transition:'all 280ms'}}><div className="nav-inner" style={{maxWidth:1160,margin:'0 auto',padding:'0 2rem',display:'flex',alignItems:'center',justifyContent:'space-between'}}><button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',border:'none',background:'none',padding:0}}><svg width="26" height="26" viewBox="0 0 40 40" fill="none"><ellipse cx="18" cy="26" rx="10" ry="8" fill={C.amber} opacity="0.9"/><circle cx="26" cy="14" r="6" fill={C.amber}/><circle cx="28" cy="12" r="1.5" fill={C.dark}/><path d="M32 14 L36 13 L33 16" fill={C.amberL}/><path d="M15 34 L13 38 M21 34 L23 38" stroke={C.amber} strokeWidth="2" strokeLinecap="round"/></svg><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'clamp(0.95rem, 3vw, 1.05rem)',color:C.dark}}>Coop Works<span style={{color:C.amber}}> Consulting</span></div></button><div className="nav-desktop-links" style={{display:'flex',alignItems:'center',gap:'2rem'}}>{[['Services','services'],['Integration','integration'],['Turnkey','turnkey'],['Platform','software'],['About','about']].map(([l,id])=><button key={id} onClick={()=>go(id)} style={{fontFamily:'"Inter",sans-serif',fontSize:'0.87rem',fontWeight:500,color:C.mid,background:'none',border:'none',cursor:'pointer'}}>{l}</button>)}</div><MinBtn label="Contact Us" onClick={onContact}/></div></nav>;}
 
+function Hero(){
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF' }}>
+    <section style={{
+      position: 'relative',
+      minHeight: '100vh',
+      backgroundImage: "url('/hero-single-chick.jpg')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center right',
+      backgroundRepeat: 'no-repeat',
+      display: 'flex',
+      alignItems: 'center',
+      paddingTop: '5rem',
+      overflow: 'hidden'
+    }}>
+      {/* Soft gradient overlay to ensure crisp text readability on desktop and mobile */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(90deg, rgba(247,241,227,0.92) 0%, rgba(247,241,227,0.7) 50%, rgba(247,241,227,0.2) 85%)',
+        pointerEvents: 'none',
+        zIndex: 1
+      }}/>
       
-      {/* 1. EXECUTIVE STICKY NAVIGATION HEADER */}
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-subtle)',
-        padding: '0.9rem 2rem',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          
-          {/* Logo Identity */}
-          <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', textDecoration: 'none' }}>
-            <svg width="42" height="42" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="10" fill="#0A192F" />
-              <path d="M14 16C14 13.7909 15.7909 12 18 12H30C32.2091 12 34 13.7909 34 16V32C34 34.2091 32.2091 36 30 36H18C15.7909 36 14 34.2091 14 32V16Z" stroke="#D97706" strokeWidth="2" strokeDasharray="3 3" />
-              <path d="M20 20L24 16L28 20" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M24 16V32" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M18 26L24 32L30 26" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy-900)', letterSpacing: '-0.02em', lineHeight: 1.1, fontFamily: 'var(--font-accent)' }}>
-                COOP WORKS
-              </div>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--amber-700)', letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>
-                STRATEGIC ADVISORY
-              </div>
-            </div>
-          </a>
-
-          {/* Navigation Links */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '2.25rem' }}>
-            <a href="#practices" style={{ color: 'var(--text-body)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600 }}>
-              Practice Areas
-            </a>
-            <a href="#insights" style={{ color: 'var(--text-body)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600 }}>
-              Strategic Insights
-            </a>
-            <a href="#calculator" style={{ color: 'var(--text-body)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600 }}>
-              ROI Calculator
-            </a>
-            <a href="#cases" style={{ color: 'var(--text-body)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600 }}>
-              Case Studies
-            </a>
-            <a href="#leadership" style={{ color: 'var(--text-body)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600 }}>
-              Leadership
-            </a>
-            <a href="#brand-system" style={{ color: 'var(--amber-700)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Sparkles size={14} /> Brand Identity
-            </a>
-          </nav>
-
-          {/* Action CTAs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-            <button 
-              onClick={() => setIsConsultationModalOpen(true)}
-              className="btn-primary"
-              style={{ padding: '0.65rem 1.35rem', fontSize: '0.875rem' }}
-            >
-              <Calendar size={16} /> Schedule Consultation
-            </button>
-          </div>
-
-        </div>
-      </header>
-
-      {/* 2. HERO SECTION */}
-      <section style={{
-        backgroundColor: '#FFFFFF',
-        padding: '5.5rem 2rem 4rem 2rem',
-        borderBottom: '1px solid var(--border-subtle)',
+      <div style={{
         position: 'relative',
-        overflow: 'hidden'
+        zIndex: 2,
+        maxWidth: 1160,
+        margin: '0 auto',
+        padding: 'clamp(2rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2rem)',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start'
       }}>
-        {/* Soft Background Accent Lines */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '50%',
-          height: '100%',
-          backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(30, 58, 138, 0.04) 0%, transparent 60%)',
-          pointerEvents: 'none'
-        }} />
-
-        <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ maxWidth: '840px' }}>
-            
-            <div className="badge-gold" style={{ marginBottom: '1.5rem' }}>
-              <Award size={14} /> Global Management Consulting & Executive Advisory
-            </div>
-
-            <h1 style={{
-              fontSize: '3.6rem',
-              fontWeight: 800,
-              color: 'var(--navy-900)',
-              lineHeight: 1.12,
-              marginBottom: '1.5rem',
-              letterSpacing: '-0.025em'
-            }}>
-              Transforming Complexity into Executive Growth & Market Leadership.
-            </h1>
-
-            <p style={{
-              fontSize: '1.25rem',
-              color: 'var(--text-body)',
-              lineHeight: 1.6,
-              marginBottom: '2.5rem',
-              maxWidth: '720px'
-            }}>
-              We partner with Fortune 500 CEOs, Boards of Directors, and Private Equity sponsors to solve high-stakes operational challenges, execute digital transformation, and unlock multi-billion dollar enterprise value.
-            </p>
-
-            {/* Action CTAs */}
-            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '4rem' }}>
-              <button 
-                onClick={() => setIsConsultationModalOpen(true)}
-                className="btn-primary"
-                style={{ padding: '1rem 2.25rem', fontSize: '1rem' }}
-              >
-                Request Executive Briefing <ArrowRight size={18} />
-              </button>
-
-              <a 
-                href="#calculator"
-                className="btn-secondary"
-                style={{ padding: '1rem 2rem', fontSize: '1rem' }}
-              >
-                <Calculator size={18} /> Interactive ROI Calculator
-              </a>
-            </div>
-
-          </div>
-
-          {/* STATS COUNTER BAR */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '1.5rem',
-            padding: '2.25rem',
-            backgroundColor: 'var(--bg-surface)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-sm)'
+        <div style={{ maxWidth: 560 }}>
+          <h1 className="rv" style={{
+            fontFamily: '"Playfair Display",serif',
+            fontSize: 'clamp(2.3rem, 6.2vw, 4.8rem)',
+            fontWeight: 900,
+            color: C.dark,
+            lineHeight: 1.08,
+            marginBottom: '0.85rem',
+            letterSpacing: '-0.025em'
           }}>
-            <div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--navy-900)', fontFamily: 'var(--font-accent)' }}>
-                $2.5B+
-              </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-body)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Enterprise Value Created
-              </div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Across 120+ client engagements globally
-              </div>
-            </div>
+            Coop Works <span style={{ color: C.amber }}>Consulting</span>
+          </h1>
 
-            <div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--navy-900)', fontFamily: 'var(--font-accent)' }}>
-                98.4%
-              </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-body)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Board Retention Rate
-              </div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Long-term strategic partnership trust
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--navy-900)', fontFamily: 'var(--font-accent)' }}>
-                74%
-              </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--emerald-600)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Average Operational Latency Cut
-              </div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Driven by AI & automated architecture
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--navy-900)', fontFamily: 'var(--font-accent)' }}>
-                14
-              </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--amber-700)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Industry Sectors Served
-              </div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                From FinTech to Industrial Supply Chains
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 3. CORE PRACTICE AREAS */}
-      <section id="practices" style={{
-        padding: '6rem 2rem',
-        backgroundColor: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 4rem auto' }}>
-            <div className="section-tag">Core Capabilities</div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '1rem' }}>
-              Strategic Advisory Practice Areas
-            </h2>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--text-body)' }}>
-              Tailored multi-disciplinary consulting services designed to solve complex structural, operational, and digital challenges.
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-            gap: '2rem'
+          <div className="rv rv-d1" style={{
+            fontFamily: '"Inter",sans-serif',
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            color: C.dark,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            marginBottom: '1.5rem'
           }}>
-            {practiceAreas.map((practice) => {
-              const IconComponent = practice.icon;
-              return (
-                <div 
-                  key={practice.id}
-                  className="executive-card-interactive"
-                  onClick={() => setActivePracticeModal(practice.id)}
-                  style={{ padding: '2.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-                >
-                  <div>
-                    <div style={{
-                      width: '52px',
-                      height: '52px',
-                      borderRadius: '12px',
-                      backgroundColor: 'var(--blue-50)',
-                      border: '1px solid var(--blue-100)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--navy-900)',
-                      marginBottom: '1.5rem'
-                    }}>
-                      <IconComponent size={26} />
-                    </div>
-
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--amber-700)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
-                      {practice.subtitle}
-                    </div>
-
-                    <h3 style={{ fontSize: '1.35rem', color: 'var(--navy-900)', marginBottom: '1rem', lineHeight: 1.3 }}>
-                      {practice.title}
-                    </h3>
-
-                    <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                      {practice.summary}
-                    </p>
-                  </div>
-
-                  <div>
-                    <div style={{
-                      padding: '0.75rem 1rem',
-                      backgroundColor: 'var(--bg-surface)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      color: 'var(--emerald-600)',
-                      border: '1px solid var(--emerald-100)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '1.25rem'
-                    }}>
-                      <CheckCircle2 size={16} /> {practice.impactMetric}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy-900)' }}>
-                      Explore Methodology & Deliverables <ChevronRight size={16} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            Data driven Poultry consulting
           </div>
-
-        </div>
-      </section>
-
-      {/* 4. INTERACTIVE ROI & STRATEGIC IMPACT CALCULATOR */}
-      <section id="calculator" style={{
-        padding: '6rem 2rem',
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
-            
-            <div>
-              <div className="badge-gold" style={{ marginBottom: '1rem' }}>
-                <Calculator size={14} /> Executive Impact Engine
-              </div>
-
-              <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '1.25rem', lineHeight: 1.2 }}>
-                Estimate Your EBITDA & Revenue Uplift Opportunity
-              </h2>
-
-              <p style={{ fontSize: '1.0625rem', color: 'var(--text-body)', lineHeight: 1.6, marginBottom: '2rem' }}>
-                Our proprietary benchmarking model projects potential cost rationalization and revenue expansion based on historical engagements across similar revenue tiers and industry sectors.
-              </p>
-
-              {/* Calculator Input Controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.5rem' }}>
-                    Select Industry Sector
-                  </label>
-                  <select 
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    className="input-executive"
-                    style={{ fontWeight: 600 }}
-                  >
-                    <option value="Manufacturing & Operations">Industrial, Supply Chain & Manufacturing</option>
-                    <option value="Financial Services">Financial Services, FinTech & Banking</option>
-                    <option value="Healthcare & Life Sciences">Healthcare, Pharma & Life Sciences</option>
-                    <option value="Technology & Software">Enterprise Technology & SaaS</option>
-                    <option value="Retail & Consumer Goods">Retail, E-Commerce & Consumer Goods</option>
-                  </select>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy-900)' }}>
-                      Annual Enterprise Revenue ($M USD)
-                    </label>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--amber-700)' }}>
-                      ${annualRevenue}M
-                    </span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="20" 
-                    max="1000" 
-                    step="10" 
-                    value={annualRevenue} 
-                    onChange={(e) => setAnnualRevenue(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: 'var(--navy-900)', cursor: 'pointer' }}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                    <span>$20M</span>
-                    <span>$500M</span>
-                    <span>$1.0B+</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.5rem' }}>
-                    Primary Engagement Strategic Objective
-                  </label>
-                  <select 
-                    value={optimizationGoal}
-                    onChange={(e) => setOptimizationGoal(e.target.value)}
-                    className="input-executive"
-                    style={{ fontWeight: 600 }}
-                  >
-                    <option value="EBITDA Expansion & Cost Optimization">EBITDA Expansion & SG&A Restructuring</option>
-                    <option value="AI Architecture Modernization">Enterprise AI Architecture & Latency Reduction</option>
-                    <option value="M&A Synergy Realization">M&A Integration & Portfolio Synergies</option>
-                    <option value="Supply Chain Resilience">Global Supply Chain Re-Engineering</option>
-                  </select>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Calculated Output Card */}
-            <div style={{
-              backgroundColor: 'var(--navy-900)',
-              borderRadius: 'var(--radius-lg)',
-              padding: '3rem 2.5rem',
-              color: '#FFFFFF',
-              boxShadow: 'var(--shadow-xl)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '100%',
-                height: '100%',
-                backgroundImage: 'radial-gradient(circle at 90% 10%, rgba(217, 119, 6, 0.15) 0%, transparent 60%)',
-                pointerEvents: 'none'
-              }} />
-
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--amber-500)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-                  PROJECTED 12-MONTH IMPACT MODEL
-                </div>
-                
-                <h3 style={{ fontSize: '1.75rem', color: '#FFFFFF', marginBottom: '2rem', fontFamily: 'var(--font-accent)' }}>
-                  {industry}
-                </h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                  
-                  <div style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                    padding: '1.5rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}>
-                    <div style={{ fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '0.35rem' }}>
-                      Est. Annual Cost Rationalization
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--amber-500)' }}>
-                      ${calculatedSavings}M
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#CBD5E1', marginTop: '0.25rem' }}>
-                      ~8.2% of annual operating cost
-                    </div>
-                  </div>
-
-                  <div style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                    padding: '1.5rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}>
-                    <div style={{ fontSize: '0.8125rem', color: '#94A3B8', marginBottom: '0.35rem' }}>
-                      Est. Gross Revenue Expansion
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#34D399' }}>
-                      +${calculatedRevenueUplift}M
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#CBD5E1', marginTop: '0.25rem' }}>
-                      Through pricing & efficiency gains
-                    </div>
-                  </div>
-
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '1.25rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  borderRadius: 'var(--radius-sm)',
-                  marginBottom: '2rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <PieChart size={24} style={{ color: 'var(--amber-500)' }} />
-                    <div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#FFFFFF' }}>Advisory Payback Period</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Full engagement cost recouped in</div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF' }}>
-                    {estimatedPaybackMonths} Months
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => setIsConsultationModalOpen(true)}
-                  className="btn-amber"
-                  style={{ width: '100%', padding: '1rem', fontSize: '0.9375rem' }}
-                >
-                  Lock In Custom Strategic Audit <ArrowRight size={18} />
-                </button>
-
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 5. THOUGHT LEADERSHIP & PUBLICATIONS */}
-      <section id="insights" style={{
-        padding: '6rem 2rem',
-        backgroundColor: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 4rem auto' }}>
-            <div className="section-tag">Executive Intelligence</div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '1rem' }}>
-              Strategic Insights & Research Reports
-            </h2>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--text-body)' }}>
-              Empirically grounded research and white papers authored by our global practice leaders.
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '2rem'
+          <p className="rv rv-d2" style={{
+            fontFamily: '"DM Sans",sans-serif',
+            fontSize: '1.08rem',
+            color: C.mid,
+            lineHeight: 1.85,
+            maxWidth: 460,
+            marginBottom: '2.5rem'
           }}>
-            {reports.map((report) => (
-              <div 
-                key={report.id}
-                className="executive-card"
-                style={{ padding: '2.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <span className="badge-navy">{report.type}</span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-muted)' }}>{report.pages}</span>
-                  </div>
-
-                  <h3 style={{ fontSize: '1.35rem', color: 'var(--navy-900)', marginBottom: '1rem', lineHeight: 1.3 }}>
-                    {report.title}
-                  </h3>
-
-                  <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                    {report.abstract}
-                  </p>
-                </div>
-
-                <div>
-                  <button 
-                    onClick={() => setActiveReportModal(report.id)}
-                    className="btn-secondary"
-                    style={{ width: '100%', padding: '0.75rem 1rem', fontSize: '0.875rem', justifyContent: 'center' }}
-                  >
-                    <FileText size={16} /> Read Key Findings & Executive Summary
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* 6. CLIENT CASE STUDIES & PROOF POINTS */}
-      <section id="cases" style={{
-        padding: '6rem 2rem',
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            We grow broilers, build turnkey farms, and run every decision through our own software application — built for real Indian broiler operations.
+          </p>
           
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 4rem auto' }}>
-            <div className="section-tag">Proven Results</div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '1rem' }}>
-              Client Transformations & Case Studies
-            </h2>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--text-body)' }}>
-              Realized value delivered across multinational enterprise clients and private equity portfolios.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            {caseStudies.map((study, idx) => (
-              <div 
-                key={idx}
-                className="executive-card"
-                style={{ padding: '2.5rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '3rem', alignItems: 'center' }}
-              >
-                <div>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span className="badge-gold">{study.sector}</span>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-muted)' }}>{study.client}</span>
-                  </div>
-
-                  <h3 style={{ fontSize: '1.6rem', color: 'var(--navy-900)', marginBottom: '1rem', lineHeight: 1.25 }}>
-                    {study.headline}
-                  </h3>
-
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>The Strategic Challenge</div>
-                    <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)' }}>{study.challenge}</p>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Coop Works Intervention</div>
-                    <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)' }}>{study.solution}</p>
-                  </div>
-                </div>
-
-                <div style={{
-                  backgroundColor: 'var(--bg-surface)',
-                  padding: '2rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-subtle)'
-                }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--navy-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                    Verified Deliverable Impact
-                  </div>
-
-                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-                    {study.results.map((res, i) => (
-                      <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, color: 'var(--navy-900)' }}>
-                        <CheckCircle2 size={18} style={{ color: 'var(--emerald-600)', flexShrink: 0, marginTop: '2px' }} />
-                        <span>{res}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* 7. BRAND SYSTEM & GRAPHIC PALETTE SHOWCASE */}
-      <section id="brand-system" style={{
-        padding: '6rem 2rem',
-        backgroundColor: 'var(--navy-900)',
-        color: '#FFFFFF'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 4rem auto' }}>
-            <div style={{ color: 'var(--amber-500)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-              Design System & Graphic Identity
-            </div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '1rem', fontFamily: 'var(--font-accent)' }}>
-              Coop Works Visual & Graphic Architecture
-            </h2>
-            <p style={{ fontSize: '1.0625rem', color: '#94A3B8' }}>
-              A clean, authoritative light-mode aesthetic constructed to reflect global executive trust, high-density data clarity, and structural balance.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-            
-            {/* Logo Specifications */}
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--amber-500)', marginBottom: '1rem', fontFamily: 'var(--font-accent)' }}>
-                Official Emblem & Logo
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#FFFFFF', padding: '1.25rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem' }}>
-                <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="48" rx="10" fill="#0A192F" />
-                  <path d="M14 16C14 13.7909 15.7909 12 18 12H30C32.2091 12 34 13.7909 34 16V32C34 34.2091 32.2091 36 30 36H18C15.7909 36 14 34.2091 14 32V16Z" stroke="#D97706" strokeWidth="2" strokeDasharray="3 3" />
-                  <path d="M20 20L24 16L28 20" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M24 16V32" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M18 26L24 32L30 26" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A192F', fontFamily: 'Cinzel' }}>COOP WORKS</div>
-                  <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#B45309', letterSpacing: '0.15em' }}>STRATEGIC ADVISORY</div>
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: '#CBD5E1', lineHeight: 1.5 }}>
-                Geometric monogram fusing an outer executive pillar shield with inner interlocking <strong>C</strong> and <strong>W</strong> vectors symbolizing structural cohesion and growth.
-              </p>
-            </div>
-
-            {/* Graphic Color Palette */}
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--amber-500)', marginBottom: '1rem', fontFamily: 'var(--font-accent)' }}>
-                Graphic Color Palette
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-                <div style={{ backgroundColor: '#0A192F', padding: '0.75rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 700 }}>Navy 900</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>#0A192F</div>
-                </div>
-                <div style={{ backgroundColor: '#1E40AF', padding: '0.75rem', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 700 }}>Royal Blue</div>
-                  <div style={{ fontSize: '0.65rem', color: '#DBEAFE' }}>#1E40AF</div>
-                </div>
-                <div style={{ backgroundColor: '#D97706', padding: '0.75rem', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 700 }}>Amber Gold</div>
-                  <div style={{ fontSize: '0.65rem', color: '#FEF3C7' }}>#D97706</div>
-                </div>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '0.75rem', borderRadius: '6px' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#0F172A', fontWeight: 700 }}>Light Surface</div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>#F8FAFC</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Typography Scale */}
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: '2rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--amber-500)', marginBottom: '1rem', fontFamily: 'var(--font-accent)' }}>
-                Typography Hierarchy
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: '#94A3B8', textTransform: 'uppercase' }}>Heading Font (Playfair / Cinzel)</div>
-                  <div style={{ fontSize: '1.1rem', fontFamily: 'var(--font-heading)', color: '#FFF', fontWeight: 700 }}>Executive Authority & Heritage</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: '#94A3B8', textTransform: 'uppercase' }}>Body & UI Font (Plus Jakarta Sans)</div>
-                  <div style={{ fontSize: '0.9rem', fontFamily: 'var(--font-body)', color: '#CBD5E1' }}>Crisp, high-density corporate readability</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 8. EXECUTIVE LEADERSHIP */}
-      <section id="leadership" style={{
-        padding: '6rem 2rem',
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 4rem auto' }}>
-            <div className="section-tag">Senior Leadership</div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '1rem' }}>
-              Managing Partners & Practice Leaders
-            </h2>
-            <p style={{ fontSize: '1.0625rem', color: 'var(--text-body)' }}>
-              Seasoned executive strategists with decades of operational leadership at tier-1 global consulting firms.
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '2.5rem'
-          }}>
-            {leadership.map((leader, i) => (
-              <div 
-                key={i}
-                className="executive-card"
-                style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-              >
-                <div>
-                  <div style={{
-                    width: '72px',
-                    height: '72px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--navy-900)',
-                    color: 'var(--amber-500)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem',
-                    fontWeight: 800,
-                    marginBottom: '1.5rem',
-                    fontFamily: 'Cinzel'
-                  }}>
-                    {leader.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-
-                  <h3 style={{ fontSize: '1.35rem', color: 'var(--navy-900)', marginBottom: '0.25rem' }}>
-                    {leader.name}
-                  </h3>
-
-                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--amber-700)', marginBottom: '0.75rem' }}>
-                    {leader.title}
-                  </div>
-
-                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--navy-700)', padding: '0.5rem 0.75rem', backgroundColor: 'var(--blue-50)', borderRadius: '4px', marginBottom: '1.25rem' }}>
-                    {leader.pedigree}
-                  </div>
-
-                  <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)', lineHeight: 1.6 }}>
-                    {leader.bio}
-                  </p>
-                </div>
-
-                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  <strong>Specialization:</strong> {leader.expertise}
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* 9. GLOBAL OFFICES & FOOTER */}
-      <footer style={{
-        backgroundColor: '#070E1B',
-        color: '#FFFFFF',
-        padding: '5rem 2rem 2.5rem 2rem',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: '3rem', marginBottom: '4rem' }}>
-            
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginBottom: '1.25rem' }}>
-                <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="48" rx="10" fill="#1E40AF" />
-                  <path d="M14 16C14 13.7909 15.7909 12 18 12H30C32.2091 12 34 13.7909 34 16V32C34 34.2091 32.2091 36 30 36H18C15.7909 36 14 34.2091 14 32V16Z" stroke="#D97706" strokeWidth="2" strokeDasharray="3 3" />
-                  <path d="M20 20L24 16L28 20" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M24 16V32" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M18 26L24 32L30 26" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', fontFamily: 'Cinzel' }}>COOP WORKS</div>
-                  <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--amber-500)', letterSpacing: '0.15em' }}>STRATEGIC ADVISORY</div>
-                </div>
-              </div>
-
-              <p style={{ color: '#94A3B8', fontSize: '0.9375rem', maxWidth: '380px', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                Tier-1 strategic management consulting firm delivering corporate strategy, digital transformation, supply chain optimization, and private equity advisory globally.
-              </p>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <span className="badge-gold">ISO 27001 Certified</span>
-                <span className="badge-navy">C-Suite Trusted</span>
-              </div>
-            </div>
-
-            <div>
-              <h4 style={{ color: '#FFFFFF', fontSize: '0.9375rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Practice Areas
-              </h4>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: '#94A3B8' }}>
-                <li><a href="#practices" style={{ color: 'inherit', textDecoration: 'none' }}>Corporate Strategy & M&A</a></li>
-                <li><a href="#practices" style={{ color: 'inherit', textDecoration: 'none' }}>AI & Digital Transformation</a></li>
-                <li><a href="#practices" style={{ color: 'inherit', textDecoration: 'none' }}>Supply Chain Optimization</a></li>
-                <li><a href="#practices" style={{ color: 'inherit', textDecoration: 'none' }}>Private Equity Advisory</a></li>
-                <li><a href="#practices" style={{ color: 'inherit', textDecoration: 'none' }}>ESG & Governance</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 style={{ color: '#FFFFFF', fontSize: '0.9375rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Global Presence
-              </h4>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: '#94A3B8' }}>
-                <li>📍 New York (Americas HQ)</li>
-                <li>📍 London (EMEA HQ)</li>
-                <li>📍 Zurich (Strategic Advisory)</li>
-                <li>📍 Singapore (APAC HQ)</li>
-                <li>📍 Tokyo (Technology Practice)</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 style={{ color: '#FFFFFF', fontSize: '0.9375rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Executive Inquiries
-              </h4>
-              <div style={{ fontSize: '0.875rem', color: '#94A3B8', marginBottom: '1rem', lineHeight: 1.6 }}>
-                Direct C-Suite Advisory Help Desk & Client Portal:
-              </div>
-              <button 
-                onClick={() => setIsConsultationModalOpen(true)}
-                className="btn-amber"
-                style={{ width: '100%', padding: '0.75rem 1rem', fontSize: '0.875rem' }}
-              >
-                <Mail size={16} /> Contact Advisory Partner
-              </button>
-            </div>
-
-          </div>
-
-          <div style={{
-            paddingTop: '2rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '0.8125rem',
-            color: '#64748B',
-            flexWrap: 'wrap',
-            gap: '1rem'
-          }}>
-            <div>
-              © {new Date().getFullYear()} Coop Works Consulting LLC. All rights reserved. Registered under sjay.collabs@gmail.com.
-            </div>
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Governance</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Security Protocols</a>
-            </div>
-          </div>
-
-        </div>
-      </footer>
-
-      {/* 10. PRACTICE AREA METHODOLOGY MODAL */}
-      {activePracticeModal !== null && (
-        <div className="modal-overlay" onClick={() => setActivePracticeModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '2.5rem' }}>
-            {(() => {
-              const practice = practiceAreas.find(p => p.id === activePracticeModal);
-              if (!practice) return null;
-              const Icon = practice.icon;
-              return (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '10px', backgroundColor: 'var(--blue-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--navy-900)' }}>
-                        <Icon size={24} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--amber-700)', textTransform: 'uppercase' }}>{practice.subtitle}</div>
-                        <h3 style={{ fontSize: '1.4rem', color: 'var(--navy-900)' }}>{practice.title}</h3>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setActivePracticeModal(null)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <p style={{ fontSize: '1rem', color: 'var(--text-body)', lineHeight: 1.6, marginBottom: '2rem' }}>
-                    {practice.summary}
-                  </p>
-
-                  <div style={{ marginBottom: '2rem' }}>
-                    <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--navy-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                      Core Practice Deliverables & Workstreams
-                    </h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {practice.deliverables.map((del, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-                          <CheckCircle2 size={18} style={{ color: 'var(--navy-900)' }} />
-                          <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--navy-900)' }}>{del}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                    <button onClick={() => setActivePracticeModal(null)} className="btn-secondary">
-                      Close Window
-                    </button>
-                    <button onClick={() => { setActivePracticeModal(null); setIsConsultationModalOpen(true); }} className="btn-primary">
-                      Inquire About This Practice
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
+          <div className="rv rv-d3" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <MinBtn
+              label="View Services"
+              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+              icon={<ArrowRight size={15}/>}
+            />
+            <MinBtn
+              label="About Us"
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+              variant="outline"
+            />
           </div>
         </div>
-      )}
-
-      {/* 11. REPORT SUMMARY MODAL */}
-      {activeReportModal !== null && (
-        <div className="modal-overlay" onClick={() => setActiveReportModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '2.5rem' }}>
-            {(() => {
-              const report = reports.find(r => r.id === activeReportModal);
-              if (!report) return null;
-              return (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                    <div>
-                      <span className="badge-gold" style={{ marginBottom: '0.5rem' }}>{report.type}</span>
-                      <h3 style={{ fontSize: '1.5rem', color: 'var(--navy-900)' }}>{report.title}</h3>
-                    </div>
-                    <button 
-                      onClick={() => setActiveReportModal(null)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <p style={{ fontSize: '1rem', color: 'var(--text-body)', lineHeight: 1.6, marginBottom: '2rem' }}>
-                    {report.abstract}
-                  </p>
-
-                  <div style={{ marginBottom: '2rem' }}>
-                    <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--navy-900)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-                      Key Executive Findings
-                    </h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {report.keyTakeaways.map((takeaway, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)' }}>
-                          <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--navy-900)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
-                          <span style={{ fontSize: '0.9375rem', color: 'var(--text-body)', lineHeight: 1.5 }}>{takeaway}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>PDF Size: 4.2 MB • Full Unrestricted Access</span>
-                    <button onClick={() => alert(`Simulated Download: ${report.title}.pdf sent to your device.`)} className="btn-primary">
-                      <Download size={18} /> Download Full PDF Report
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* 12. CONSULTATION LEAD MODAL */}
-      {isConsultationModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsConsultationModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '2.5rem' }}>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-              <div>
-                <div className="badge-navy" style={{ marginBottom: '0.5rem' }}>Executive Strategic Inquiry</div>
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--navy-900)' }}>Schedule a Partner Consultation</h3>
-              </div>
-              <button 
-                onClick={() => setIsConsultationModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {formSubmitted ? (
-              <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--emerald-50)', color: 'var(--emerald-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-                  <CheckCircle2 size={36} />
-                </div>
-                <h4 style={{ fontSize: '1.5rem', color: 'var(--navy-900)', marginBottom: '0.5rem' }}>Consultation Confirmed</h4>
-                <p style={{ fontSize: '0.9375rem', color: 'var(--text-body)', maxWidth: '420px', margin: '0 auto 2rem auto' }}>
-                  Thank you, <strong>{formData.name}</strong>. A Senior Managing Director will review your strategic priorities and contact you within 2 business hours.
-                </p>
-                <button onClick={() => { setIsConsultationModalOpen(false); setFormSubmitted(false); }} className="btn-primary">
-                  Return to Platform
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={(e) => { e.preventDefault(); setFormSubmitted(true); }} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                      Full Name *
-                    </label>
-                    <input 
-                      required 
-                      type="text" 
-                      placeholder="e.g. Sarah Jenkins"
-                      value={formData.name} 
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                      className="input-executive"
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                      Corporate Email *
-                    </label>
-                    <input 
-                      required 
-                      type="email" 
-                      placeholder="s.jenkins@company.com"
-                      value={formData.email} 
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-                      className="input-executive"
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                      Company Name *
-                    </label>
-                    <input 
-                      required 
-                      type="text" 
-                      placeholder="e.g. Global Tech Solutions"
-                      value={formData.company} 
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })} 
-                      className="input-executive"
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                      Executive Title / Role
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Chief Executive Officer / Vice President"
-                      value={formData.role} 
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })} 
-                      className="input-executive"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                    Primary Practice Interest
-                  </label>
-                  <select 
-                    value={formData.interest}
-                    onChange={(e) => setFormData({ ...formData, interest: e.target.value })}
-                    className="input-executive"
-                  >
-                    <option value="Corporate Strategy & M&A">Corporate Strategy & M&A Advisory</option>
-                    <option value="AI & Digital Transformation">AI & Digital Transformation</option>
-                    <option value="Operational Excellence & Supply Chain">Operational Excellence & Supply Chain</option>
-                    <option value="Private Equity Value Creation">Private Equity Value Creation</option>
-                    <option value="ESG & Sustainable Governance">ESG & Sustainable Governance</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--navy-900)', marginBottom: '0.35rem' }}>
-                    Brief Summary of Strategic Priorities
-                  </label>
-                  <textarea 
-                    rows={3} 
-                    placeholder="Describe key challenges, project timeline, or target outcomes..."
-                    value={formData.message} 
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
-                    className="input-executive" 
-                  />
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setIsConsultationModalOpen(false)} className="btn-secondary">
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    Submit Advisory Request <ArrowRight size={16} />
-                  </button>
-                </div>
-
-              </form>
-            )}
-
-          </div>
-        </div>
-      )}
-
-    </div>
+      </div>
+    </section>
   );
 }
+
+function IconIntegration(){
+  return (
+    <svg width="46" height="46" viewBox="0 0 48 48" fill="none" stroke={C.amber} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* Hand-drawn organic hen outline like reference */}
+      <path d="M14 36 C10 33, 8 26, 12 18 C14 14, 18 10, 22 10 C26 10, 28 13, 30 15 C34 14, 38 16, 38 20 C42 22, 44 26, 42 30 C40 35, 34 38, 28 38 C20 38, 16 38, 14 36 Z" />
+      {/* Hen Comb & Beak */}
+      <path d="M22 10 C22 6, 26 6, 25 10 C28 8, 30 11, 29 13" />
+      <path d="M30 15 L36 16 L31 19" />
+      {/* Hen Eye & Wattle */}
+      <circle cx="26" cy="14" r="1.2" fill={C.amber} stroke="none" />
+      <path d="M29 18 C30 21, 28 23, 27 21" />
+      {/* Hand-drawn wing detail feathers */}
+      <path d="M19 25 C23 23, 28 25, 27 31 C25 34, 21 34, 19 30" />
+      <path d="M23 27 C26 26, 29 28, 28 32" />
+    </svg>
+  );
+}
+
+function IconTurnkey(){
+  return (
+    <svg width="46" height="46" viewBox="0 0 48 48" fill="none" stroke={C.amber} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* Hand-drawn barn farm field like reference */}
+      <path d="M8 40 L8 24 L24 12 L40 24 L40 40 Z" />
+      <path d="M5 25 L24 10 L43 25" />
+      <path d="M19 40 L19 28 C19 25, 29 25, 29 28 L29 40" />
+      <line x1="24" y1="18" x2="24" y2="22" />
+      <line x1="22" y1="20" x2="26" y2="20" />
+      {/* Rising Sun and rays like reference */}
+      <path d="M31 12 C33 9, 38 9, 40 12" />
+      <line x1="36" y1="6" x2="36" y2="8" />
+      <line x1="41" y1="8" x2="40" y2="10" />
+    </svg>
+  );
+}
+
+function IconSoftware(){
+  return (
+    <svg width="46" height="46" viewBox="0 0 48 48" fill="none" stroke={C.amber} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* Hand-drawn egg pair like reference */}
+      <ellipse cx="20" cy="26" rx="11" ry="14" transform="rotate(-15 20 26)" />
+      <ellipse cx="32" cy="28" rx="9" ry="12" transform="rotate(20 32 28)" />
+      {/* Subtle shine / organic sketch line */}
+      <path d="M14 20 C15 16, 18 14, 21 14" />
+    </svg>
+  );
+}
+
+function IconAdvisory(){
+  return (
+    <svg width="46" height="46" viewBox="0 0 48 48" fill="none" stroke={C.amber} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* Hand-drawn farm landscape fields with trees like reference */}
+      <path d="M6 38 C14 34, 22 36, 30 32 C36 29, 40 31, 44 34" />
+      <path d="M8 42 C16 38, 26 40, 42 38" />
+      {/* Plants / Trees sprouting */}
+      <line x1="14" y1="35" x2="14" y2="20" />
+      <circle cx="14" cy="18" r="3.5" />
+      <line x1="22" y1="35" x2="22" y2="15" />
+      <circle cx="22" cy="13" r="4" />
+      {/* Sun rising above field */}
+      <path d="M30 28 C30 22, 36 22, 38 25" />
+      <line x1="34" y1="19" x2="34" y2="16" />
+      <line x1="39" y1="20" x2="41" y2="18" />
+    </svg>
+  );
+}
+
+const SVC=[{Icon:IconIntegration,title:'Broiler Integration',line:'Contract farming with large integrators to enable high volume production',id:'integration'},{Icon:IconTurnkey,title:'Turnkey Broiler Operations',line:'Tailored for individuals looking for a secondary source of income',id:'turnkey'},{Icon:IconSoftware,title:'Software Solution',line:'In-house ERP built for real Indian broiler farm operations.',id:'software'},{Icon:IconAdvisory,title:'Poultry Advisory',line:'FCR improvement, biosecurity audits, human resource training, and farm feasibility.',id:'about'}];
+
+function ServicesSection(){
+  return (
+    <section id="services" style={{ background: C.white, borderTop: `1px solid ${C.border}` }}>
+      <div className="services-outer-grid" style={{
+        maxWidth: 1160,
+        margin: '0 auto',
+        padding: 'clamp(4rem, 7vw, 6rem) clamp(1.25rem, 4vw, 2rem) 3rem',
+      }}>
+        <div>
+          <div className="rv" style={{
+            fontFamily: '"Inter",sans-serif',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: C.amber,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            marginBottom: '0.85rem'
+          }}>
+            What We Do
+          </div>
+          <h2 className="rv rv-d1" style={{
+            fontFamily: '"Playfair Display",serif',
+            fontSize: 'clamp(2.1rem, 3.4vw, 2.85rem)',
+            fontWeight: 900,
+            color: C.dark,
+            lineHeight: 1.15,
+            marginBottom: '1.25rem'
+          }}>
+            Data-Driven Operations.<br/>
+            Ethical Partnerships.
+          </h2>
+          <p className="rv rv-d2" style={{
+            fontFamily: '"DM Sans",sans-serif',
+            fontSize: '0.98rem',
+            color: C.mid,
+            lineHeight: 1.82,
+            maxWidth: 320,
+            marginBottom: '2rem'
+          }}>
+            Four core verticals, one unified mission — end-to-end transparency, telemetry-backed precision, and verified farm profitability across Indian poultry.
+          </p>
+        </div>
+        
+        <div className="services-cards-grid">
+          {SVC.map(({ Icon, title, line, id }, idx) => (
+            <div key={id} className={`rv rv-d${Math.min(idx + 1, 4)}`} style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+              <div style={{ flexShrink: 0, marginTop: 2 }}>
+                <Icon/>
+              </div>
+              <div>
+                <div style={{
+                  fontFamily: '"Playfair Display",serif',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  color: C.dark,
+                  marginBottom: '0.4rem',
+                  lineHeight: 1.25
+                }}>
+                  {title}
+                </div>
+                <div style={{
+                  fontFamily: '"DM Sans",sans-serif',
+                  fontSize: '0.88rem',
+                  color: C.mid,
+                  lineHeight: 1.72,
+                  marginBottom: '0.65rem'
+                }}>
+                  {line}
+                </div>
+                <button
+                  onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontFamily: '"Inter",sans-serif',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: C.amber,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  Know more <ChevronRight size={14}/>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntegrationSection({onContact}:{onContact?:()=>void}){
+  return (
+    <section id="integration" className="integration-section" style={{
+      position: 'relative',
+      minHeight: '88vh',
+      backgroundColor: '#FFFFFF',
+      backgroundImage: "url('/integration-white-chickens.jpg')",
+      backgroundSize: '960px auto',
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '3rem 0 6.5rem',
+      overflow: 'hidden'
+    }}>
+      <div className="integration-grid" style={{
+        position: 'relative',
+        zIndex: 2,
+        maxWidth: 1300,
+        margin: '0 auto',
+        padding: '0 clamp(1.25rem, 4vw, 2.5rem)',
+        width: '100%',
+      }}>
+        {/* Left Column: Tagline and Title */}
+        <div>
+          <div className="rv" style={{
+            fontFamily: '"Inter",sans-serif',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            color: C.amber,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            marginBottom: '1rem'
+          }}>
+            Broiler Integration
+          </div>
+          <h2 className="rv rv-d1" style={{
+            fontFamily: '"Playfair Display",serif',
+            fontSize: 'clamp(2.1rem, 3.4vw, 2.85rem)',
+            fontWeight: 900,
+            color: C.dark,
+            lineHeight: 1.14,
+            letterSpacing: '-0.02em'
+          }}>
+            Your Birds.<br/>
+            <span style={{ color: C.amber }}>Our Team.</span><br/>
+            One Goal.
+          </h2>
+        </div>
+
+        {/* Center: Open gap for chickens */}
+        <div className="integration-center-spacer" style={{ minHeight: 440, pointerEvents: 'none' }} />
+
+        {/* Right Column: User copy & Get in Touch CTA */}
+        <div>
+          <p className="rv rv-d1" style={{
+            fontFamily: '"DM Sans",sans-serif',
+            fontSize: '1.05rem',
+            color: C.mid,
+            lineHeight: 1.85,
+            marginBottom: '1.5rem'
+          }}>
+            Coop Works is a registered contract grower for major broiler integrators. We bring the farm — sheds, verified biosecurity, experienced labor, and live daily telemetry.
+          </p>
+          <p className="rv rv-d2" style={{
+            fontFamily: '"DM Sans",sans-serif',
+            fontSize: '1.02rem',
+            color: C.mid,
+            lineHeight: 1.85,
+            marginBottom: '2.25rem'
+          }}>
+            Every single batch is tracked daily in our software application - Poultry Resource Planner. Mortality, feed consumption, FCR, and sample weights are all regularly logged with full shared transparency.
+          </p>
+          <div className="rv rv-d3">
+            <MinBtn
+              label="Get in Touch"
+              onClick={onContact || (() => document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' }))}
+              icon={<ArrowRight size={15}/>}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ROIModal({onClose}:{onClose:()=>void}){const[birds,setBirds]=useState(15000);const[chickCost,setChickCost]=useState(45);const[feedCost,setFeedCost]=useState(2200);const[growCharge,setGrowCharge]=useState(6);const[salePrice,setSalePrice]=useState(125);const[fcr,setFcr]=useState(1.65);const[mortPct,setMortPct]=useState(3);const live=Math.round(birds*(1-mortPct/100));const totalKg=live*2.2;const feedBags=(totalKg*fcr)/50;const prod=birds*chickCost+feedBags*feedCost+totalKg*growCharge;const rev=totalKg*salePrice;const netPL=rev-prod;const roi=prod>0?(netPL/prod)*100:0;const fmt=(n:number)=>{const a=Math.abs(n);const s=n<0?'-Rs':'Rs';return a>=100000?`${s}${(a/100000).toFixed(2)}L`:`${s}${(a/1000).toFixed(1)}K`;};const sliders=[{label:'Chicks',val:birds,set:setBirds,min:0,max:50000,step:500,disp:birds.toLocaleString('en-IN')},{label:'Chick Cost (Rs/bird)',val:chickCost,set:setChickCost,min:0,max:100,step:1,disp:`Rs${chickCost}`},{label:'Feed Cost (Rs/50kg bag)',val:feedCost,set:setFeedCost,min:1000,max:10000,step:50,disp:`Rs${feedCost.toLocaleString()}`},{label:'Growing Charge (Rs/kg)',val:growCharge,set:setGrowCharge,min:0,max:20,step:0.5,disp:`Rs${growCharge}/kg`},{label:'Sale Price (Rs/kg)',val:salePrice,set:setSalePrice,min:0,max:500,step:5,disp:`Rs${salePrice}/kg`},{label:'FCR',val:fcr,set:setFcr,min:1.0,max:2.5,step:0.05,disp:fcr.toFixed(2)},{label:'Mortality',val:mortPct,set:setMortPct,min:0,max:10,step:1,disp:`${mortPct}%`}];return <div style={{position:'fixed',inset:0,zIndex:3000,background:'rgba(28,24,19,0.55)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}} onClick={onClose}><div style={{background:C.white,borderRadius:8,width:'100%',maxWidth:760,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 24px 64px rgba(0,0,0,0.18)'}} onClick={e=>e.stopPropagation()}><div style={{padding:'1.25rem 1.75rem',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><h3 style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.3rem',color:C.dark}}>Batch ROI Calculator</h3><p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.8rem',color:C.light,marginTop:2}}>Avg live weight 2.2 kg at harvest</p></div><button onClick={onClose} style={{width:32,height:32,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={14} color={C.mid}/></button></div><div className="roi-modal-grid"><div className="roi-modal-sliders" style={{padding:'1.5rem',borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',gap:'1rem'}}>{sliders.map(s=><div key={s.label}><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontFamily:'"Inter",sans-serif',fontSize:'0.77rem',fontWeight:600,color:C.mid}}>{s.label}</label><div style={{fontFamily:'"Inter",sans-serif',fontSize:'0.85rem',fontWeight:700,color:C.dark}}>{s.disp}</div></div><input type="range" min={s.min} max={s.max} step={s.step} value={s.val} onChange={e=>s.set(Number(e.target.value))} style={{width:'100%',accentColor:C.amber}}/></div>)}</div><div style={{padding:'1.5rem',background:C.bg}}><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1rem',color:C.dark,marginBottom:'1.25rem'}}>Results</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.75rem',marginBottom:'1.5rem'}}>{[{l:'Production Cost',v:fmt(prod),pos:false},{l:'Revenue',v:fmt(rev),pos:true},{l:'Net P/L',v:fmt(netPL),pos:netPL>=0},{l:'ROI',v:`${roi.toFixed(1)}%`,pos:roi>=0}].map(({l,v,pos})=><div key={l} style={{background:C.white,borderRadius:4,padding:'1rem',border:`1px solid ${C.border}`}}><div style={{fontFamily:'"Playfair Display",serif',fontSize:'1.4rem',fontWeight:900,color:pos?'#2E7D32':'#B83230',lineHeight:1}}>{v}</div><div style={{fontFamily:'"Inter",sans-serif',fontSize:'0.62rem',fontWeight:600,color:C.light,marginTop:4,textTransform:'uppercase',letterSpacing:'0.05em'}}>{l}</div></div>)}</div>{[{l:'Live birds',v:`${live.toLocaleString()} birds`},{l:'Total kg',v:`${Math.round(totalKg).toLocaleString()} kg`},{l:'Feed bags',v:`${Math.round(feedBags)} bags`},{l:'Cost/kg',v:`Rs${prod>0?(prod/totalKg).toFixed(2):0}/kg`}].map(({l,v})=><div key={l} style={{display:'flex',justifyContent:'space-between',padding:'0.4rem 0',borderBottom:`1px solid ${C.border}`}}><span style={{fontFamily:'"Inter",sans-serif',fontSize:'0.78rem',color:C.mid}}>{l}</span><span style={{fontFamily:'"Inter",sans-serif',fontSize:'0.85rem',fontWeight:700,color:C.dark}}>{v}</span></div>)}</div></div></div></div>;}
+
+function IndustryJourneyModal({onClose}:{onClose:()=>void}){const steps=[{n:'01',t:'You Bring the Capital',d:'Investor meets Coop Works. We assess farm requirements, location, flock size and structure the deal before anything moves.'},{n:'02',t:'We Source the Sheds',d:'Coop Works identifies and evaluates shed locations — size, construction, road access, water supply, proximity to integrator routes.'},{n:'03',t:'Lease Contracts with Shed Owners',d:'We negotiate and sign lease agreements on your behalf — fixed rent, maintenance terms, renovation rights. Clean contracts, no verbal deals.'},{n:'04',t:'Shed Preparation',d:'Complete cleanout, litter application, equipment calibration, heater testing. Shed certified biosecure before the first chick arrives.'},{n:'05',t:'Chick Placement',d:'Day-old chicks arrive and are counted tray by tray. Placement entered in PRP — the 45-day clock starts.'},{n:'06',t:'Brooding Phase (Days 1-14)',d:'High heat, starter feed, nipple drinker checks every few hours. Mortality and Feed consumption logged everyday. Critical first two weeks.'},{n:'07',t:'Growth & Finishing (Days 15-45)',d:'Grower then finisher ration. Weekly live weight samples tracked against breed standards. FCR calculated in real time.'},{n:'08',t:'Harvest',d:"Catching crew loads birds. Weighed live at the integrator's plant. Every kg recorded against PRP batch data."},{n:'09',t:'Settlement',d:'The buyer pays the growing charge per kg. Coop Works deducts its management fee. Full P&L shared within 24 hours of harvest.'}];return <div style={{position:'fixed',inset:0,zIndex:3000,background:'rgba(28,24,19,0.55)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1.5rem'}} onClick={onClose}><div style={{background:C.white,borderRadius:8,width:'100%',maxWidth:640,maxHeight:'88vh',overflowY:'auto',boxShadow:'0 24px 64px rgba(0,0,0,0.18)'}} onClick={e=>e.stopPropagation()}><div style={{padding:'1.5rem 2rem',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,background:C.white,zIndex:1}}><h3 style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.3rem',color:C.dark}}>How the Broiler Industry Works</h3><button onClick={onClose} style={{width:32,height:32,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={14} color={C.mid}/></button></div><div style={{padding:'2rem'}}>{steps.map((s,i)=><div key={s.n} style={{display:'flex',gap:'1.5rem',paddingBottom:i<steps.length-1?'1.75rem':'0',marginBottom:i<steps.length-1?'1.75rem':'0',borderBottom:i<steps.length-1?`1px solid ${C.border}`:'none'}}><div style={{flexShrink:0,width:38,height:38,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Playfair Display",serif',fontWeight:900,fontSize:'0.75rem',color:C.amber}}>{s.n}</div><div><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'0.97rem',color:C.dark,marginBottom:'0.3rem'}}>{s.t}</div><div style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.87rem',color:C.mid,lineHeight:1.75}}>{s.d}</div></div></div>)}</div></div></div>;}
+
+function TurnkeySection(){
+  const [showROI, setShowROI] = useState(false);
+  const [showJourney, setShowJourney] = useState(false);
+
+  return (
+    <>
+      {showROI && <ROIModal onClose={() => setShowROI(false)} />}
+      {showJourney && <IndustryJourneyModal onClose={() => setShowJourney(false)} />}
+
+      <section
+        id="turnkey"
+        className="turnkey-section"
+        style={{
+          position: 'relative',
+          minHeight: '88vh',
+          backgroundColor: '#FFFFFF',
+          backgroundImage: "url('/turnkey-couple-ipad-white.jpg')",
+          backgroundSize: '1000px auto',
+          backgroundPosition: '2.5cm center',
+          backgroundRepeat: 'no-repeat',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '6.5rem 0',
+          overflow: 'hidden',
+          width: '100%'
+        }}
+      >
+        <div
+          className="turnkey-grid"
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            maxWidth: 1280,
+            margin: '0 auto',
+            padding: '0 clamp(1.25rem, 4vw, 2rem)',
+            width: '100%',
+          }}
+        >
+          {/* Left Column: Buffer for the complete couple */}
+          <div className="turnkey-spacer" style={{ minHeight: 480, pointerEvents: 'none' }} />
+
+          {/* Right Column: Section text block with Apple fade-in-up */}
+          <div style={{ maxWidth: 540 }}>
+            <div
+              className="rv"
+              style={{
+                fontFamily: '"Inter",sans-serif',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                color: C.amber,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                marginBottom: '1rem'
+              }}
+            >
+              Turnkey Broiler Operation
+            </div>
+            
+            <h2
+              className="rv rv-d1"
+              style={{
+                fontFamily: '"Playfair Display",serif',
+                fontSize: 'clamp(2.1rem, 3.4vw, 2.85rem)',
+                fontWeight: 900,
+                color: C.dark,
+                lineHeight: 1.16,
+                marginBottom: '1.4rem',
+                letterSpacing: '-0.02em'
+              }}
+            >
+              <span style={{ display: 'block' }}>Build Alternate Wealth.</span>
+              <span style={{ color: C.amber, display: 'block' }}>From Your Home.</span>
+            </h2>
+            
+            <p
+              className="rv rv-d2"
+              style={{
+                fontFamily: '"DM Sans",sans-serif',
+                fontSize: '1.05rem',
+                color: C.mid,
+                lineHeight: 1.85,
+                marginBottom: '1.25rem'
+              }}
+            >
+              Looking to generate a reliable secondary source of income without leaving your day job or home? You provide the investment capital, and we handle 100% of the ground operations — shed lease contracts, equipment fit-outs, day-old chick placement, expert veterinary oversight, and guaranteed harvest settlement.
+            </p>
+            
+            <p
+              className="rv rv-d3"
+              style={{
+                fontFamily: '"DM Sans",sans-serif',
+                fontSize: '1.02rem',
+                color: C.mid,
+                lineHeight: 1.85,
+                marginBottom: '2.5rem'
+              }}
+            >
+              Track live CCTV camera feeds, daily mortality, and batch P&L directly from your iPad or phone with complete peace of mind. Our management earnings are strictly tied to your flock&apos;s net profitability.
+            </p>
+            
+            <div className="rv rv-d4" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <MinBtn
+                label="Calculate Batch ROI"
+                onClick={() => setShowROI(true)}
+                icon={<Calculator size={15}/>}
+              />
+              <MinBtn
+                label="See How It Works"
+                onClick={() => setShowJourney(true)}
+                variant="outline"
+                icon={<ChevronRight size={15}/>}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function SoftwareSection({onContact}:{onContact:()=>void}){
+  const[prpTab,setPrpTab]=useState('OVERVIEW');
+  const[interacted,setInteracted]=useState(false);
+  const containerRef=useRef<HTMLDivElement>(null);
+  const ipadRef=useRef<HTMLDivElement>(null);
+  const rightRef=useRef<HTMLDivElement>(null);
+  const progRef=useRef(0);
+  const targetRef=useRef(0);
+  const rafRef=useRef<number>(0);
+
+  useEffect(()=>{
+    const onScroll=()=>{
+      const el=containerRef.current;
+      if(!el)return;
+      if(window.innerWidth<=1024)return;
+      const{top}=el.getBoundingClientRect();
+      targetRef.current=Math.min(1,Math.max(0,(window.innerHeight-top)/(window.innerHeight*0.85)));
+    };
+    const animate=()=>{
+      if(window.innerWidth>1024){
+        progRef.current+=(targetRef.current-progRef.current)*0.07;
+        const p=progRef.current;
+        if(ipadRef.current){
+          const rotX=20*Math.max(0,1-p*2);
+          const sc=0.68+0.32*Math.min(1,p*1.7);
+          const tx=-(Math.max(0,(p-0.58)/0.38)*20);
+          ipadRef.current.style.transform=`perspective(1400px) rotateX(${rotX}deg) scale(${sc}) translateX(${tx}%)`;
+          ipadRef.current.style.opacity=String(Math.min(1,0.3+p*1.5));
+        }
+        if(rightRef.current){
+          const rp=Math.min(1,Math.max(0,(p-0.62)/0.33));
+          rightRef.current.style.opacity=String(rp);
+          rightRef.current.style.transform=`translateX(${(1-rp)*32}px)`;
+          rightRef.current.style.pointerEvents=rp>0.5?'auto':'none';
+        }
+      } else {
+        if(ipadRef.current){
+          ipadRef.current.style.transform='none';
+          ipadRef.current.style.opacity='1';
+        }
+        if(rightRef.current){
+          rightRef.current.style.opacity='1';
+          rightRef.current.style.transform='none';
+          rightRef.current.style.pointerEvents='auto';
+        }
+      }
+      rafRef.current=requestAnimationFrame(animate);
+    };
+    window.addEventListener('scroll',onScroll,{passive:true});
+    onScroll();
+    rafRef.current=requestAnimationFrame(animate);
+    return()=>{
+      window.removeEventListener('scroll',onScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
+  },[]);
+
+  const info=TAB_INFO[prpTab]||TAB_INFO['OVERVIEW'];
+
+  return (
+    <section id="software" style={{background:C.white,borderTop:`1px solid ${C.border}`}}>
+      <div style={{maxWidth:1160,margin:'0 auto',padding:'clamp(4rem, 7vw, 7rem) clamp(1.25rem, 4vw, 2rem) 0',textAlign:'center'}}>
+        <div className="rv" style={{fontFamily:'"Inter",sans-serif',fontSize:'0.72rem',fontWeight:700,color:C.amber,letterSpacing:'0.16em',textTransform:'uppercase',marginBottom:'0.65rem'}}>Software Platform</div>
+        <h2 className="rv" style={{fontFamily:'"Playfair Display",serif',fontSize:'clamp(2.1rem, 3.4vw, 2.85rem)',fontWeight:900,color:C.dark,lineHeight:1.1,marginBottom:'0.85rem'}}>Poultry Resource Planner</h2>
+        <p className="rv" style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.97rem',color:C.mid,maxWidth:420,margin:'0 auto 1rem',lineHeight:1.8}}>Our own ERP, built for Indian broiler operations — not adapted from a generic farming template.</p>
+      </div>
+
+      <div ref={containerRef} className="software-scroll-container" style={{height:'210vh',position:'relative'}}>
+        <div className="software-sticky-wrapper" style={{position:'sticky',top:0,height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',overflow:'visible',padding:'0 2rem'}}>
+          <div ref={ipadRef} className="software-ipad-container" style={{width:'100%',maxWidth:820,opacity:0,willChange:'transform,opacity',transformOrigin:'center center',flexShrink:0}}>
+            <div className="software-ipad-frame" style={{
+              position: 'relative',
+              background: '#18181B',
+              borderRadius: '34px',
+              padding: '16px 20px',
+              boxShadow: '0 30px 80px -15px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.15) inset, 0 0 0 3px #3F3F46',
+              border: '2px solid #52525B',
+              maxWidth: 820,
+              margin: '0 auto'
+            }}>
+              <div style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: '#27272A',
+                border: '1px solid #3F3F46',
+                margin: '0 auto 10px auto'
+              }}/>
+              <div className="software-screen" style={{
+                background: '#FFF',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                height: 540,
+                boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)',
+                position: 'relative',
+                cursor: 'pointer'
+              }} onClick={()=>setInteracted(true)}>
+                <PRPDemoApp tab={prpTab} onTab={t=>{setPrpTab(t);setInteracted(true);}}/>
+                {!interacted&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.15)',backdropFilter:'blur(2px)',zIndex:10,cursor:'pointer'}} onClick={()=>setInteracted(true)}><div style={{background:'rgba(255,255,255,0.92)',borderRadius:4,padding:'0.6rem 1.25rem',fontFamily:'"Inter",sans-serif',fontSize:'0.8rem',fontWeight:700,color:C.dark}}>Click to Interact</div></div>}
+              </div>
+            </div>
+          </div>
+          <div ref={rightRef} className="software-sidebar" style={{position:'absolute',right:'3rem',width:'26%',maxWidth:280,opacity:0,transform:'translateX(32px)',willChange:'transform,opacity'}}>
+            <div style={{fontFamily:'"Inter",sans-serif',fontSize:'0.62rem',fontWeight:700,color:C.amber,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:'0.5rem'}}>Now viewing</div>
+            <h3 style={{fontFamily:'"Playfair Display",serif',fontSize:'1.4rem',fontWeight:900,color:C.dark,marginBottom:'0.65rem',lineHeight:1.2}}>{info.title}</h3>
+            <p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.9rem',color:C.mid,lineHeight:1.82}}>{info.desc}</p>
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:1160,margin:'0 auto',padding:'2rem clamp(1.25rem, 4vw, 2rem) clamp(4rem, 6vw, 7rem)',textAlign:'center',display:'flex',justifyContent:'center',gap:10,flexWrap:'wrap'}}>
+        <a href="https://poultryresourceplanner.com" target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'0.65rem 1.5rem',borderRadius:4,background:C.amber,color:'#fff',fontFamily:'"Inter",sans-serif',fontWeight:600,fontSize:'0.87rem',textDecoration:'none'}}>Open Platform <ExternalLink size={13}/></a>
+        <button onClick={onContact} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'0.65rem 1.4rem',borderRadius:4,background:'transparent',color:C.dark,fontFamily:'"Inter",sans-serif',fontWeight:600,fontSize:'0.87rem',border:`1.5px solid ${C.dark}`,cursor:'pointer'}}>Request Demo</button>
+      </div>
+    </section>
+  );
+}
+
+function AboutSection(){
+  return (
+    <section id="about" style={{background:C.white,borderTop:`1px solid ${C.border}`}}>
+      <div className="about-grid about-container" style={{maxWidth:1160,margin:'0 auto',padding:'clamp(4rem, 8vw, 8rem) clamp(1.25rem, 4vw, 2rem)',alignItems:'start'}}>
+        <div className="rv-left">
+          <div className="rv" style={{fontFamily:'"Inter",sans-serif',fontSize:'0.72rem',fontWeight:700,color:C.amber,letterSpacing:'0.16em',textTransform:'uppercase',marginBottom:'0.85rem'}}>Our Philosophy</div>
+          <h2 style={{fontFamily:'"Playfair Display",serif',fontSize:'clamp(2.1rem, 3.4vw, 2.85rem)',fontWeight:900,color:C.dark,lineHeight:1.12,marginBottom:'1.25rem'}}>Built on Data,<br/>Transparency<br/>&amp; Trust.</h2>
+          <p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.97rem',color:C.mid,lineHeight:1.85,marginBottom:'2.5rem'}}>Poultry farming is about consistent execution and honest numbers. Every decision we make is backed by real field data, shared openly with everyone involved.</p>
+          <MinBtn label="Get in Touch" onClick={()=>document.getElementById('footer')?.scrollIntoView({behavior:'smooth'})} icon={<ArrowRight size={14}/>}/>
+        </div>
+        <div className="rv-right" style={{display:'flex',flexDirection:'column',gap:'2.5rem'}}>
+          {[{t:'Data before decisions',d:'We log before we act. FCR, mortality, weight — every number goes into PRP before any management call is made.'},{t:'Same numbers, both sides',d:'Our clients see the exact same P&L we do. No curated reports, no selective sharing — ever.'},{t:'Measurable targets only',d:'Every batch starts with a specific FCR and livability target. We close with a verified result, not a narrative.'},{t:'Partnership model',d:'We succeed when you succeed. Our income is tied to batch performance, not a flat management fee.'}].map((p,i)=><div key={p.t} style={{display:'flex',gap:'1.25rem',alignItems:'flex-start'}}><div style={{width:34,height:34,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Playfair Display",serif',fontWeight:900,fontSize:'0.75rem',color:C.amber,flexShrink:0}}>{String(i+1).padStart(2,'0')}</div><div><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1rem',color:C.dark,marginBottom:'0.3rem'}}>{p.t}</div><div style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.87rem',color:C.mid,lineHeight:1.75}}>{p.d}</div></div></div>)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContactModal({onClose}:{onClose:()=>void}){const[form,setForm]=useState({name:'',email:'',phone:'',service:'',message:''});const[submitted,setSubmitted]=useState(false);const[loading,setLoading]=useState(false);const IS:React.CSSProperties={padding:'0.6rem 0.85rem',border:`1px solid ${C.border}`,borderRadius:4,fontFamily:'"DM Sans",sans-serif',fontSize:'0.9rem',color:C.dark,outline:'none',width:'100%',background:C.white};const upd=(k:string,v:string)=>setForm(f=>({...f,[k]:v}));const handleSubmit=async(e:React.FormEvent)=>{e.preventDefault();setLoading(true);try{await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});}catch(err){console.error(err);}finally{setLoading(false);setSubmitted(true);}};return <div style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(28,24,19,0.55)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}} onClick={onClose}><div style={{background:C.white,borderRadius:8,width:'100%',maxWidth:480,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 24px 64px rgba(0,0,0,0.2)'}} onClick={e=>e.stopPropagation()}><div style={{padding:'1.25rem 1.5rem',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><h3 style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.2rem',color:C.dark}}>Schedule a Consultation</h3><p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.82rem',color:C.mid,marginTop:4}}>We&apos;ll get back to you within 24 hours.</p></div><button onClick={onClose} style={{width:30,height:30,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}><X size={13} color={C.mid}/></button></div><div style={{padding:'1.5rem'}}>{submitted?<div style={{textAlign:'center',padding:'3rem 0'}}><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.2rem',color:C.dark,marginBottom:8}}>Thank You!</div><p style={{fontFamily:'"DM Sans",sans-serif',color:C.mid,fontSize:'0.9rem'}}>We&apos;ve received your enquiry and will be in touch shortly.</p></div>:<form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:'1rem'}}>{[['name','Full Name','Your name','text',true],['email','Email','you@example.com','email',true],['phone','Phone Number','+91 90194 52501','tel',true]].map(([k,l,ph,t,req])=><div key={k as string} style={{display:'flex',flexDirection:'column',gap:5}}><label style={{fontFamily:'"Inter",sans-serif',fontSize:'0.77rem',fontWeight:600,color:C.mid}}>{l} {req&&'*'}</label><input required={req as boolean} type={t as string} placeholder={ph as string} value={(form as any)[k as string]} onChange={e=>upd(k as string,e.target.value)} style={IS}/></div>)}<div style={{display:'flex',flexDirection:'column',gap:5}}><label style={{fontFamily:'"Inter",sans-serif',fontSize:'0.77rem',fontWeight:600,color:C.mid}}>Service</label><select value={form.service} onChange={e=>upd('service',e.target.value)} style={{...IS}}><option value="">Select...</option>{['Broiler Integration','Turnkey Operations','PRP Demo','Advisory','General Enquiry'].map(o=><option key={o}>{o}</option>)}</select></div><div style={{display:'flex',flexDirection:'column',gap:5}}><label style={{fontFamily:'"Inter",sans-serif',fontSize:'0.77rem',fontWeight:600,color:C.mid}}>Message</label><textarea placeholder="Tell us about your operation..." value={form.message} onChange={e=>upd('message',e.target.value)} style={{...IS,minHeight:80,resize:'vertical'}}/></div><MinBtn label={loading?"Sending...":"Send Enquiry"} icon={<ArrowRight size={15}/>}/></form>}</div></div></div>;}
+
+function Footer({onContact}:{onContact:()=>void}){
+  return (
+    <footer id="footer" style={{background:C.dark,padding:'4rem 0 2rem'}}>
+      <div style={{maxWidth:1160,margin:'0 auto',padding:'0 clamp(1.25rem, 4vw, 2rem)'}}>
+        <div className="footer-grid" style={{paddingBottom:'3rem',borderBottom:'1px solid rgba(255,255,255,0.06)',marginBottom:'2rem'}}>
+          <div>
+            <div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.1rem',color:'#fff',marginBottom:'0.75rem'}}>Coop Works<span style={{color:C.amber}}> Consulting</span></div>
+            <p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.85rem',color:'rgba(255,255,255,0.32)',lineHeight:1.78,maxWidth:240,marginBottom:'1.5rem'}}>Data-driven poultry consulting — integration, turnkey, software, and advisory.</p>
+            <button onClick={onContact} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'0.6rem 1.25rem',borderRadius:4,background:C.amber,color:'#fff',fontFamily:'"Inter",sans-serif',fontWeight:600,fontSize:'0.82rem',border:'none',cursor:'pointer'}}>Contact Us <ArrowRight size={13}/></button>
+          </div>
+          {[{title:'Services',links:['Broiler Integration','Turnkey Operations','Software Platform','Advisory']},{title:'Platform',links:['poultryresourceplanner.com','Owner Login','Logger Login']},{title:'Contact',links:['+91 9019452501','India']}].map(col=><div key={col.title}><div style={{fontFamily:'"Inter",sans-serif',fontSize:'0.65rem',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(255,255,255,0.28)',marginBottom:'0.85rem'}}>{col.title}</div><div style={{display:'flex',flexDirection:'column',gap:'0.5rem'}}>{col.links.map(l=><span key={l} style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.85rem',color:'rgba(255,255,255,0.4)',cursor:'pointer'}}>{l}</span>)}</div></div>)}
+        </div>
+        <div style={{fontFamily:'"Inter",sans-serif',fontSize:'0.73rem',color:'rgba(255,255,255,0.2)'}}>© {new Date().getFullYear()} Coop Works Consulting. All rights reserved.</div>
+      </div>
+    </footer>
+  );
+}
+
+export default function HomePage(){const[showContact,setShowContact]=useState(false);useScrollReveal();const oc=()=>setShowContact(true);return <><Navbar onContact={oc}/><main><Hero/><ServicesSection/><IntegrationSection onContact={oc}/><TurnkeySection/><SoftwareSection onContact={oc}/><AboutSection/></main><Footer onContact={oc}/>{showContact&&<ContactModal onClose={()=>setShowContact(false)}/>}</>;}
