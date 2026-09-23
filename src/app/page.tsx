@@ -9,14 +9,14 @@ const BM:{[k:string]:[string,string]}={red:[P.red,'rgba(211,47,47,0.1)'],green:[
 function PBadge({label,color}:{label:string;color:BC}){const[c,bg]=BM[color];return <span style={{background:bg,color:c,padding:'2px 8px',borderRadius:999,fontSize:'0.65rem',fontWeight:700,fontFamily:P.font,whiteSpace:'nowrap'}}>{label}</span>;}
 function PBtn({label,small=false,outline=false,onClick}:{label:string;small?:boolean;outline?:boolean;onClick?:()=>void}){return <button onClick={onClick} style={{background:outline?'transparent':P.red,color:outline?P.text:'white',border:outline?'1px solid rgba(0,0,0,0.15)':'none',borderRadius:P.rSm,padding:small?'0.18rem 0.5rem':'0.38rem 0.85rem',fontWeight:700,fontFamily:P.font,fontSize:small?'0.68rem':'0.78rem',cursor:'pointer',whiteSpace:'nowrap'}}>{label}</button>;}
 function PCard({children,style}:{children:React.ReactNode;style?:React.CSSProperties}){return <div style={{background:P.glass,backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)',border:`1px solid ${P.glassBdr}`,borderRadius:P.rMd,boxShadow:P.shadow,padding:'0.9rem',...style}}>{children}</div>;}
-function PM({icon,label,value,color=P.text}:{icon:string;label:string;value:string;color?:string}){return <div style={{background:'rgba(255,255,255,0.7)',border:'1px solid rgba(0,0,0,0.06)',borderRadius:10,padding:'0.55rem 0.75rem'}}><div style={{fontSize:'0.5rem',fontWeight:700,color:P.muted,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:2,fontFamily:P.font}}>{icon} {label}</div><div style={{fontSize:'0.95rem',fontWeight:800,color,fontFamily:P.font,lineHeight:1}}>{value}</div></div>;}
+function PM({icon,label,value,color=P.text}:{icon:string;label:string;value:string;color?:string}){return <div style={{background:'rgba(255,255,255,0.7)',border:'1px solid rgba(0,0,0,0.06)',borderRadius:10,padding:'0.45rem 0.45rem',minWidth:0,overflow:'hidden'}}><div style={{fontSize:'0.48rem',fontWeight:700,color:P.muted,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:2,fontFamily:P.font,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{icon} {label}</div><div style={{fontSize:'clamp(0.72rem, 1.6vw, 0.92rem)',fontWeight:800,color,fontFamily:P.font,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{value}</div></div>;}
 function PT({headers,rows}:{headers:string[];rows:(string|React.ReactNode)[][]}){return <div style={{background:'rgba(255,255,255,0.7)',borderRadius:10,border:'1px solid rgba(0,0,0,0.06)',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontFamily:P.font,fontSize:'0.68rem'}}><thead><tr style={{background:'rgba(255,255,255,0.9)'}}>{headers.map((h,i)=><th key={i} style={{padding:'0.4rem 0.65rem',textAlign:'left',color:P.muted,fontWeight:700,fontSize:'0.6rem',borderBottom:'1px solid rgba(0,0,0,0.06)',whiteSpace:'nowrap'}}>{h}</th>)}</tr></thead><tbody>{rows.map((row,i)=><tr key={i} style={{borderBottom:i<rows.length-1?'1px solid rgba(0,0,0,0.04)':'none',background:i%2===0?'transparent':'rgba(255,255,255,0.3)'}}>{row.map((cell,j)=><td key={j} style={{padding:'0.45rem 0.65rem',color:P.text,verticalAlign:'middle'}}>{cell}</td>)}</tr>)}</tbody></table></div>;}
 
 const GVF={sheds:[{id:'s1',name:'Kamareddy-Shed-A',capacity:8500,rent:12000,elec:4500,water:1800,active:1},{id:'s2',name:'Kamareddy-Shed-B',capacity:7800,rent:11000,elec:4200,water:1600,active:1},{id:'s3',name:'Nizamabad-Shed-1',capacity:9200,rent:14000,elec:5200,water:2100,active:1},{id:'s4',name:'Nizamabad-Shed-2',capacity:8000,rent:12500,elec:4800,water:1900,active:1}],batches:[{id:'b1',name:'GVF-B1',shedName:'Kamareddy-Shed-A',placed:8423,age:42,live:8201,mort:222,mortPct:2.6,avgWt:2210,fcr:1.63,feed:540,startDate:'07/08/2026'},{id:'b2',name:'GVF-B2',shedName:'Kamareddy-Shed-B',placed:7756,age:35,live:7621,mort:135,mortPct:1.7,avgWt:1840,fcr:1.64,feed:430,startDate:'14/08/2026'},{id:'b3',name:'GVF-B3',shedName:'Nizamabad-Shed-1',placed:9100,age:28,live:9014,mort:86,mortPct:0.9,avgWt:1120,fcr:1.61,feed:285,startDate:'21/08/2026'},{id:'b4',name:'GVF-B4',shedName:'Nizamabad-Shed-2',placed:7980,age:15,live:7965,mort:15,mortPct:0.2,avgWt:420,fcr:1.58,feed:96,startDate:'03/09/2026'}],harvests:[{id:'h1',batch:'GVF-H3',shed:'Nizamabad-Shed-2',date:'22/07/2026',birds:7845,avgWt:2.24,totalKg:17573,rate:122,settlement:2143906},{id:'h2',batch:'GVF-H2',shed:'Kamareddy-Shed-A',date:'05/07/2026',birds:8312,avgWt:2.19,totalKg:18203,rate:118,settlement:2147954},{id:'h3',batch:'GVF-H1',shed:'Kamareddy-Shed-B',date:'18/06/2026',birds:7634,avgWt:2.21,totalKg:16871,rate:115,settlement:1940165}],feedLots:[{id:'l1',lot:'LOT-009',date:'14/09',cost:198400,preS:'0/20',starter:'—',finisher:'0/65',status:'ACTIVE'},{id:'l2',lot:'LOT-008',date:'07/09',cost:512000,preS:'0/25',starter:'8/110',finisher:'0/110',status:'ACTIVE'},{id:'l3',lot:'LOT-007',date:'01/09',cost:489600,preS:'0/60',starter:'0/90',finisher:'0/90',status:'DEPLETED'}],health:[{batch:'GVF-B2',date:'10/09',shed:'Kamareddy-Shed-B',med:'Refit Forte',type:'VITAMINS',cost:1200},{batch:'GVF-B2',date:'10/09',shed:'Kamareddy-Shed-B',med:'Terramycin',type:'ANTIBIOTIC',cost:2800},{batch:'GVF-B1',date:'02/09',shed:'Kamareddy-Shed-A',med:'Immune Boost Plus',type:'VITAMINS',cost:1500},{batch:'GVF-B3',date:'28/08',shed:'Nizamabad-Shed-1',med:'Vimeral Forte',type:'VITAMINS',cost:800}],accounting:[{batch:'GVF-H3',shed:'Nizamabad-Shed-2',status:'HARVESTED',exp:1724000,revenue:2143906,profit:419906},{batch:'GVF-H2',shed:'Kamareddy-Shed-A',status:'HARVESTED',exp:1821000,revenue:2147954,profit:326954},{batch:'GVF-H1',shed:'Kamareddy-Shed-B',status:'HARVESTED',exp:1585000,revenue:1940165,profit:355165},{batch:'GVF-B1',shed:'Kamareddy-Shed-A',status:'GROWING',exp:1184500,revenue:0,profit:-1184500},{batch:'GVF-B2',shed:'Kamareddy-Shed-B',status:'GROWING',exp:842000,revenue:0,profit:-842000}],logs:[{date:'17/09',shed:'Kamareddy-Shed-A',batch:'GVF-B1',logger:'Ravi Kumar',mort:3,starter:'—',finisher:'18 bags',fpb:188.2},{date:'17/09',shed:'Kamareddy-Shed-B',batch:'GVF-B2',logger:'Ravi Kumar',mort:2,starter:'—',finisher:'15 bags',fpb:156.8},{date:'17/09',shed:'Nizamabad-Shed-1',batch:'GVF-B3',logger:'Suresh M.',mort:1,starter:'—',finisher:'12 bags',fpb:106.4}],roles:[{name:'Co-Owner',desc:'1 user(s)'},{name:'Admin',desc:'Full access. 1 user(s)'},{name:'Field Manager',desc:'2 user(s)'},{name:'Logger',desc:'3 user(s)'}],users:[{name:'Prakash Reddy',email:'prakash@greenvalley.in',role:'OWNER'},{name:'Venkat R.',email:'venkat@greenvalley.in',role:'MANAGER'},{name:'Suresh M.',email:'suresh@greenvalley.in',role:'MANAGER'},{name:'Ravi Kumar',email:'ravi@greenvalley.in',role:'LOGGER'}]};
 
 const TAB_INFO:Record<string,{title:string;desc:string}>={OVERVIEW:{title:'Farm Overview',desc:'A live dashboard of every KPI — FCR, mortality, livability, EPEF and total active birds across all sheds in real time.'},SHEDS:{title:'Shed Management',desc:'Register all sheds with capacity, rent, electricity and water. Each shed auto-factors into batch P&L.'},BATCHES:{title:'Bird Batches',desc:'Track every batch from Day 1 — placement, age, live birds, mortality, average weight, FCR and feed consumed.'},FEED:{title:'Feed Lot Tracking',desc:'Every feed procurement logged as a lot — date, types, bags received, cost per bag, transport and labour.'},HARVESTS:{title:'Harvest Records',desc:'Record every harvest with birds collected, average weight, rate per kg, and net settlement.'},HEALTH:{title:'Flock Health Logs',desc:'Log every medication event or vaccination per batch. Total health cost accumulated automatically.'},ACCOUNTING:{title:'Accounting & P&L',desc:'Full batch-wise financial statements — chick cost, feed, health, overheads, revenue, net P&L and ROI.'},LOGS:{title:'Daily Logs',desc:"Field workers log mortality, culls and feed bags in under 2 minutes. Timestamped and photo-verified."},ACCESS:{title:'Access Management',desc:'Create custom roles with granular read/write permissions. Invite managers, loggers and partners.'}};
 
-function PRPOverview({onBatch}:{onBatch:(b:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Farm Summary</div><div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'0.35rem',marginBottom:'0.4rem'}}><PM icon="🏷️" label="Lifted" value="3" color="#E64A19"/><PM icon="💸" label="Expense" value="Rs51.3L" color={P.red}/><PM icon="💰" label="Revenue" value="Rs62.3L" color={P.success}/><PM icon="📈" label="Net P/L" value="+Rs11.0L" color={P.success}/></div><div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'0.35rem'}}><PM icon="🌾" label="Feed" value="Rs35.6L" color="#795548"/><PM icon="🐥" label="Chicks" value="Rs11.2L" color="#F57F17"/><PM icon="💊" label="Health" value="Rs34,500" color="#1565C0"/><PM icon="👷" label="Labour" value="Rs2.80L" color="#1565C0"/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Production Averages</div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="📊" label="FCR" value="1.58" color="#1565C0"/><PM icon="💀" label="Mortality" value="1.20%" color={P.success}/><PM icon="⚖️" label="Avg Wt" value="2.25 kg" color={P.success}/><PM icon="📅" label="Avg Days" value="41.5 d" color="#1565C0"/><PM icon="⚡" label="EPEF" value="300" color={P.success}/><PM icon="✅" label="Livability" value="98.80%" color={P.success}/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.5rem'}}>Active Batches</div><PT headers={['Batch','Shed','Age','Placed','Live','Mort%','Avg Wt','FCR','']} rows={GVF.batches.map(b=>[<span key="n" style={{fontWeight:700}}>{b.name}</span>,b.shedName,`${b.age}d`,b.placed.toLocaleString('en-IN'),b.live.toLocaleString('en-IN'),<span key="m" style={{color:b.mortPct>3?P.red:P.warn,fontWeight:700}}>{b.mortPct}%</span>,`${b.avgWt}g`,<span key="f" style={{color:b.fcr<=1.65?P.success:P.red,fontWeight:700}}>{b.fcr.toFixed(2)}</span>,<PBtn key="v" label="View" small onClick={()=>onBatch(b)}/>])}/></PCard></div>;}
+function PRPOverview({onBatch}:{onBatch:(b:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Farm Summary</div><div style={{display:'grid',gridTemplateColumns:'repeat(4, minmax(0, 1fr))',gap:'0.3rem',marginBottom:'0.4rem'}}><PM icon="🏷️" label="Lifted" value="3" color="#E64A19"/><PM icon="💸" label="Expense" value="Rs51.3L" color={P.red}/><PM icon="💰" label="Revenue" value="Rs62.3L" color={P.success}/><PM icon="📈" label="Net P/L" value="+Rs11.0L" color={P.success}/></div><div style={{display:'grid',gridTemplateColumns:'repeat(4, minmax(0, 1fr))',gap:'0.3rem'}}><PM icon="🌾" label="Feed" value="Rs35.6L" color="#795548"/><PM icon="🐥" label="Chicks" value="Rs11.2L" color="#F57F17"/><PM icon="💊" label="Health" value="Rs34,500" color="#1565C0"/><PM icon="👷" label="Labour" value="Rs2.80L" color="#1565C0"/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.6rem'}}>Production Averages</div><div style={{display:'grid',gridTemplateColumns:'repeat(3, minmax(0, 1fr))',gap:'0.3rem'}}><PM icon="📊" label="FCR" value="1.58" color="#1565C0"/><PM icon="💀" label="Mortality" value="1.20%" color={P.success}/><PM icon="⚖️" label="Avg Wt" value="2.25 kg" color={P.success}/><PM icon="📅" label="Avg Days" value="41.5 d" color="#1565C0"/><PM icon="⚡" label="EPEF" value="300" color={P.success}/><PM icon="✅" label="Livability" value="98.80%" color={P.success}/></div></PCard><PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem',marginBottom:'0.5rem'}}>Active Batches</div><PT headers={['Batch','Shed','Age','Placed','Live','Mort%','Avg Wt','FCR','']} rows={GVF.batches.map(b=>[<span key="n" style={{fontWeight:700}}>{b.name}</span>,b.shedName,`${b.age}d`,b.placed.toLocaleString('en-IN'),b.live.toLocaleString('en-IN'),<span key="m" style={{color:b.mortPct>3?P.red:P.warn,fontWeight:700}}>{b.mortPct}%</span>,`${b.avgWt}g`,<span key="f" style={{color:b.fcr<=1.65?P.success:P.red,fontWeight:700}}>{b.fcr.toFixed(2)}</span>,<PBtn key="v" label="View" small onClick={()=>onBatch(b)}/>])}/></PCard></div>;}
 function PRPSheds({onManage}:{onManage:(s:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Sheds</div><PBtn label="+ New Shed"/></div><PCard style={{padding:0}}><div style={{padding:'0.35rem'}}>{GVF.sheds.map(s=><div key={s.id} style={{background:'rgba(255,255,255,0.7)',padding:'0.55rem 0.75rem',borderRadius:P.rSm,marginBottom:'0.28rem',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem'}}>{s.name}</div><div style={{fontFamily:P.font,fontSize:'0.65rem',color:P.muted}}>Capacity: {s.capacity.toLocaleString()}</div></div><div style={{display:'flex',gap:'0.3rem',alignItems:'center'}}><PBadge label={`${s.active} Active`} color="red"/><PBtn label="Manage" small onClick={()=>onManage(s)}/></div></div>)}</div></PCard></div>;}
 function PRPShedDetail({shed}:{shed:any}){const ab=GVF.batches.find(b=>b.shedName===shed.name);return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>{shed.name}</div><div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'0.35rem'}}><PM icon="🐔" label="Capacity" value={shed.capacity.toLocaleString()}/><PM icon="⚡" label="Active" value={`${shed.active}`} color={P.red}/><PM icon="💰" label="Monthly OH" value={`Rs${(shed.rent+shed.elec+shed.water).toLocaleString()}`}/></div>{ab&&<PCard><div style={{fontFamily:P.font,fontWeight:700,fontSize:'0.82rem'}}>{ab.name} — Age: {ab.age}d · FCR: {ab.fcr}</div></PCard>}</div>;}
 function PRPBatches({onManage}:{onManage:(b:any)=>void}){return <div style={{display:'flex',flexDirection:'column',gap:'0.75rem'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={{fontFamily:P.font,fontSize:'0.95rem',fontWeight:700}}>Bird Batches</div><PBtn label="New Batch"/></div><PCard style={{padding:0}}><PT headers={['Batch','Shed','Started','Age','Placed','Live','Mort%','Avg Wt','FCR','Status','']} rows={GVF.batches.map(b=>[<span key="n" style={{fontWeight:700}}>{b.name}</span>,b.shedName,b.startDate,`${b.age}d`,b.placed.toLocaleString('en-IN'),<span key="l" style={{color:P.success,fontWeight:700}}>{b.live.toLocaleString('en-IN')}</span>,<span key="m" style={{color:b.mortPct>3?P.red:P.warn,fontWeight:700}}>{b.mortPct}%</span>,`${b.avgWt}g`,<span key="f" style={{color:b.fcr<=1.65?P.success:P.red,fontWeight:700}}>{b.fcr.toFixed(2)}</span>,<PBadge key="s" label="GROWING" color="amber"/>,<PBtn key="btn" label="Manage" small onClick={()=>onManage(b)}/>])}/></PCard></div>;}
@@ -56,26 +56,32 @@ function Navbar({onContact}:{onContact:()=>void}){const[sc,setSc]=useState(false
 
 function Hero(){
   return (
-    <section style={{
+    <section className="hero-section" style={{
       position: 'relative',
       minHeight: '100vh',
-      backgroundImage: "url('/hero-single-chick.jpg')",
-      backgroundSize: 'cover',
-      backgroundPosition: 'center right',
-      backgroundRepeat: 'no-repeat',
+      backgroundColor: C.bg,
       display: 'flex',
       alignItems: 'center',
       paddingTop: '5rem',
       overflow: 'hidden'
     }}>
-      {/* Soft gradient overlay to ensure crisp text readability on desktop and mobile */}
-      <div style={{
+      {/* Chicken visual layer */}
+      <div className="hero-chick-layer" style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(90deg, rgba(247,241,227,0.92) 0%, rgba(247,241,227,0.7) 50%, rgba(247,241,227,0.2) 85%)',
+        backgroundImage: "url('/hero-single-chick.jpg')",
+        backgroundRepeat: 'no-repeat',
         pointerEvents: 'none',
         zIndex: 1
-      }}/>
+      }} />
+
+      {/* Desktop / iPad Landscape text protection gradient (stops before chicken on right) */}
+      <div className="hero-desktop-overlay" style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 1
+      }} />
       
       <div style={{
         position: 'relative',
@@ -212,7 +218,7 @@ const SVC=[{Icon:IconIntegration,title:'Broiler Integration',line:'Contract farm
 
 function ServicesSection(){
   return (
-    <section id="services" style={{ background: C.white, borderTop: `1px solid ${C.border}` }}>
+    <section id="services" style={{ background: C.white }}>
       <div className="services-outer-grid" style={{
         maxWidth: 1160,
         margin: '0 auto',
@@ -312,13 +318,12 @@ function IntegrationSection({onContact}:{onContact?:()=>void}){
       position: 'relative',
       minHeight: '88vh',
       backgroundColor: '#FFFFFF',
+      borderTop: `1px solid ${C.border}`,
       backgroundImage: "url('/integration-white-chickens.jpg')",
-      backgroundSize: '960px auto',
-      backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
       display: 'flex',
       alignItems: 'center',
-      padding: '3rem 0 6.5rem',
+      padding: '4.5rem 0 5.5rem',
       overflow: 'hidden'
     }}>
       <div className="integration-grid" style={{
@@ -356,8 +361,8 @@ function IntegrationSection({onContact}:{onContact?:()=>void}){
           </h2>
         </div>
 
-        {/* Center: Open gap for chickens */}
-        <div className="integration-center-spacer" style={{ minHeight: 440, pointerEvents: 'none' }} />
+        {/* Center: Chickens image container */}
+        <div className="integration-center-spacer" style={{ pointerEvents: 'none' }} />
 
         {/* Right Column: User copy & Get in Touch CTA */}
         <div>
@@ -410,12 +415,8 @@ function TurnkeySection(){
         className="turnkey-section"
         style={{
           position: 'relative',
-          minHeight: '88vh',
           backgroundColor: '#FFFFFF',
-          backgroundImage: "url('/turnkey-couple-ipad-white.jpg')",
-          backgroundSize: '1000px auto',
-          backgroundPosition: '2.5cm center',
-          backgroundRepeat: 'no-repeat',
+          borderTop: `1px solid ${C.border}`,
           display: 'flex',
           alignItems: 'center',
           padding: '6.5rem 0',
@@ -434,11 +435,8 @@ function TurnkeySection(){
             width: '100%',
           }}
         >
-          {/* Left Column: Buffer for the complete couple */}
-          <div className="turnkey-spacer" style={{ minHeight: 480, pointerEvents: 'none' }} />
-
-          {/* Right Column: Section text block with Apple fade-in-up */}
-          <div style={{ maxWidth: 540 }}>
+          {/* Mobile-only Title at top */}
+          <div className="turnkey-mobile-title">
             <div
               className="rv"
               style={{
@@ -469,6 +467,46 @@ function TurnkeySection(){
               <span style={{ display: 'block' }}>Build Alternate Wealth.</span>
               <span style={{ color: C.amber, display: 'block' }}>From Your Home.</span>
             </h2>
+          </div>
+
+          {/* Spacer / Container for couple image */}
+          <div className="turnkey-spacer" style={{ pointerEvents: 'none' }} />
+
+          {/* Right Column (desktop) / Bottom Block (mobile) */}
+          <div className="turnkey-content-col" style={{ maxWidth: 540 }}>
+            {/* Desktop-only Title */}
+            <div className="turnkey-desktop-title">
+              <div
+                className="rv"
+                style={{
+                  fontFamily: '"Inter",sans-serif',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: C.amber,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  marginBottom: '1rem'
+                }}
+              >
+                Turnkey Broiler Operation
+              </div>
+              
+              <h2
+                className="rv rv-d1"
+                style={{
+                  fontFamily: '"Playfair Display",serif',
+                  fontSize: 'clamp(2.1rem, 3.4vw, 2.85rem)',
+                  fontWeight: 900,
+                  color: C.dark,
+                  lineHeight: 1.16,
+                  marginBottom: '1.4rem',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                <span style={{ display: 'block' }}>Build Alternate Wealth.</span>
+                <span style={{ color: C.amber, display: 'block' }}>From Your Home.</span>
+              </h2>
+            </div>
             
             <p
               className="rv rv-d2"
@@ -636,16 +674,18 @@ function SoftwareSection({onContact}:{onContact:()=>void}){
 
 function AboutSection(){
   return (
-    <section id="about" style={{background:C.white,borderTop:`1px solid ${C.border}`}}>
+    <section id="about" style={{background:C.white,borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`}}>
       <div className="about-grid about-container" style={{maxWidth:1160,margin:'0 auto',padding:'clamp(4rem, 8vw, 8rem) clamp(1.25rem, 4vw, 2rem)',alignItems:'start'}}>
-        <div className="rv-left">
+        <div>
           <div className="rv" style={{fontFamily:'"Inter",sans-serif',fontSize:'0.72rem',fontWeight:700,color:C.amber,letterSpacing:'0.16em',textTransform:'uppercase',marginBottom:'0.85rem'}}>Our Philosophy</div>
-          <h2 style={{fontFamily:'"Playfair Display",serif',fontSize:'clamp(2.1rem, 3.4vw, 2.85rem)',fontWeight:900,color:C.dark,lineHeight:1.12,marginBottom:'1.25rem'}}>Built on Data,<br/>Transparency<br/>&amp; Trust.</h2>
-          <p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.97rem',color:C.mid,lineHeight:1.85,marginBottom:'2.5rem'}}>Poultry farming is about consistent execution and honest numbers. Every decision we make is backed by real field data, shared openly with everyone involved.</p>
-          <MinBtn label="Get in Touch" onClick={()=>document.getElementById('footer')?.scrollIntoView({behavior:'smooth'})} icon={<ArrowRight size={14}/>}/>
+          <h2 className="rv rv-d1" style={{fontFamily:'"Playfair Display",serif',fontSize:'clamp(2.1rem, 3.4vw, 2.85rem)',fontWeight:900,color:C.dark,lineHeight:1.12,marginBottom:'1.25rem'}}>Built on Data,<br/>Transparency<br/>&amp; Trust.</h2>
+          <p className="rv rv-d2" style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.97rem',color:C.mid,lineHeight:1.85,marginBottom:'2.5rem'}}>Poultry farming is about consistent execution and honest numbers. Every decision we make is backed by real field data, shared openly with everyone involved.</p>
+          <div className="rv rv-d3">
+            <MinBtn label="Get in Touch" onClick={()=>document.getElementById('footer')?.scrollIntoView({behavior:'smooth'})} icon={<ArrowRight size={14}/>}/>
+          </div>
         </div>
-        <div className="rv-right" style={{display:'flex',flexDirection:'column',gap:'2.5rem'}}>
-          {[{t:'Data before decisions',d:'We log before we act. FCR, mortality, weight — every number goes into PRP before any management call is made.'},{t:'Same numbers, both sides',d:'Our clients see the exact same P&L we do. No curated reports, no selective sharing — ever.'},{t:'Measurable targets only',d:'Every batch starts with a specific FCR and livability target. We close with a verified result, not a narrative.'},{t:'Partnership model',d:'We succeed when you succeed. Our income is tied to batch performance, not a flat management fee.'}].map((p,i)=><div key={p.t} style={{display:'flex',gap:'1.25rem',alignItems:'flex-start'}}><div style={{width:34,height:34,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Playfair Display",serif',fontWeight:900,fontSize:'0.75rem',color:C.amber,flexShrink:0}}>{String(i+1).padStart(2,'0')}</div><div><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1rem',color:C.dark,marginBottom:'0.3rem'}}>{p.t}</div><div style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.87rem',color:C.mid,lineHeight:1.75}}>{p.d}</div></div></div>)}
+        <div style={{display:'flex',flexDirection:'column',gap:'2.5rem'}}>
+          {[{t:'Data before decisions',d:'We log before we act. FCR, mortality, weight — every number goes into PRP before any management call is made.'},{t:'Same numbers, both sides',d:'Our clients see the exact same P&L we do. No curated reports, no selective sharing — ever.'},{t:'Measurable targets only',d:'Every batch starts with a specific FCR and livability target. We close with a verified result, not a narrative.'},{t:'Partnership model',d:'We succeed when you succeed. Our income is tied to batch performance, not a flat management fee.'}].map((p,i)=><div key={p.t} className={`rv rv-d${Math.min(i+1, 4)}`} style={{display:'flex',gap:'1.25rem',alignItems:'flex-start'}}><div style={{width:34,height:34,borderRadius:'50%',background:C.bg,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'"Playfair Display",serif',fontWeight:900,fontSize:'0.75rem',color:C.amber,flexShrink:0}}>{String(i+1).padStart(2,'0')}</div><div><div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1rem',color:C.dark,marginBottom:'0.3rem'}}>{p.t}</div><div style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.87rem',color:C.mid,lineHeight:1.75}}>{p.d}</div></div></div>)}
         </div>
       </div>
     </section>
@@ -659,7 +699,7 @@ function Footer({onContact}:{onContact:()=>void}){
     <footer id="footer" style={{background:C.dark,padding:'4rem 0 2rem'}}>
       <div style={{maxWidth:1160,margin:'0 auto',padding:'0 clamp(1.25rem, 4vw, 2rem)'}}>
         <div className="footer-grid" style={{paddingBottom:'3rem',borderBottom:'1px solid rgba(255,255,255,0.06)',marginBottom:'2rem'}}>
-          <div>
+          <div className="footer-brand-col">
             <div style={{fontFamily:'"Playfair Display",serif',fontWeight:700,fontSize:'1.1rem',color:'#fff',marginBottom:'0.75rem'}}>Coop Works<span style={{color:C.amber}}> Consulting</span></div>
             <p style={{fontFamily:'"DM Sans",sans-serif',fontSize:'0.85rem',color:'rgba(255,255,255,0.32)',lineHeight:1.78,maxWidth:240,marginBottom:'1.5rem'}}>Data-driven poultry consulting — integration, turnkey, software, and advisory.</p>
             <button onClick={onContact} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'0.6rem 1.25rem',borderRadius:4,background:C.amber,color:'#fff',fontFamily:'"Inter",sans-serif',fontWeight:600,fontSize:'0.82rem',border:'none',cursor:'pointer'}}>Contact Us <ArrowRight size={13}/></button>

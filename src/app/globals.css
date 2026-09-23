@@ -1859,66 +1859,134 @@ body { background: #F7F1E3; color: #1C1813; }
   }
 }
 
+/* Hero Section Chick Layer & Overlay */
+.hero-chick-layer {
+  opacity: 1;
+  background-position: right center;
+  background-size: clamp(900px, 85vw, 1376px) auto;
+  transition: opacity 0.3s ease;
+}
+.hero-desktop-overlay {
+  display: none;
+}
+
+@media (max-width: 1024px) and (orientation: portrait), (max-width: 850px) {
+  .hero-chick-layer {
+    opacity: 0.28 !important;
+    background-position: 72% center !important;
+    background-size: clamp(800px, 130vw, 1100px) auto !important;
+  }
+}
+
 /* Integration Section */
+.integration-section {
+  background-size: clamp(800px, 68vw, 980px) auto;
+  background-position: center center;
+}
 .integration-grid {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr;
   align-items: center;
   gap: 1.75rem;
 }
-@media (max-width: 1024px) {
+.integration-center-spacer {
+  display: block;
+  width: 100%;
+  height: clamp(380px, 32vw, 460px);
+}
+@media (max-width: 1024px) and (orientation: portrait), (max-width: 850px) {
   .integration-section {
-    background-size: 600px auto !important;
-    background-position: center top 2rem !important;
-    padding: 4rem 0 !important;
+    background-image: none !important;
+    padding: 1.5rem 0 1.75rem !important;
+    min-height: auto !important;
   }
   .integration-grid {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 0 !important;
     text-align: left;
   }
   .integration-center-spacer {
-    min-height: 240px !important;
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: clamp(340px, 44vw, 440px) !important;
+    background-image: url('/integration-white-chickens.jpg') !important;
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    margin: 0.5rem 0 0.65rem 0 !important;
   }
 }
-@media (max-width: 640px) {
+@media (max-width: 680px) {
+  .integration-center-spacer {
+    height: clamp(170px, 34vw, 220px) !important;
+    background-size: clamp(520px, 145vw, 680px) auto !important;
+    margin: 0.25rem 0 0.35rem 0 !important;
+  }
+}
+@media (max-width: 480px) {
   .integration-section {
-    background-size: 100% auto !important;
-    background-position: center 12rem !important;
+    padding: 1.25rem 0 1.5rem !important;
   }
   .integration-center-spacer {
-    min-height: 200px !important;
+    height: clamp(140px, 36vw, 175px) !important;
+    background-size: clamp(480px, 150vw, 580px) auto !important;
+    margin: 2.1rem 0 !important;
   }
 }
 
 /* Turnkey Section */
 .turnkey-grid {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: 1.2fr 1fr;
   align-items: center;
-  gap: 1.75rem;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
 }
-@media (max-width: 1024px) {
+.turnkey-mobile-title {
+  display: none;
+}
+.turnkey-desktop-title {
+  display: block;
+}
+.turnkey-spacer {
+  display: block;
+  width: 100%;
+  height: clamp(480px, 44vw, 640px);
+  background-image: url('/turnkey-couple-ipad-white.jpg');
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+@media (max-width: 1024px) and (orientation: portrait), (max-width: 850px) {
   .turnkey-section {
-    background-size: 640px auto !important;
-    background-position: center top 1rem !important;
-    padding: 4rem 0 !important;
+    background-image: none !important;
+    padding: 3.5rem 0 4.5rem !important;
+    min-height: auto !important;
   }
   .turnkey-grid {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 0 !important;
+  }
+  .turnkey-mobile-title {
+    display: block !important;
+    margin-bottom: 2rem !important;
+  }
+  .turnkey-desktop-title {
+    display: none !important;
   }
   .turnkey-spacer {
-    min-height: 280px !important;
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: clamp(320px, 52vw, 500px) !important;
+    background-image: url('/turnkey-couple-ipad-white.jpg') !important;
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    margin-bottom: 2.25rem !important;
   }
-}
-@media (max-width: 640px) {
-  .turnkey-section {
-    background-size: 100% auto !important;
-    background-position: center 10rem !important;
-  }
-  .turnkey-spacer {
-    min-height: 220px !important;
+  .turnkey-content-col {
+    max-width: 100% !important;
   }
 }
 
@@ -1987,6 +2055,9 @@ body { background: #F7F1E3; color: #1C1813; }
   gap: 3rem;
 }
 @media (max-width: 860px) {
+  .footer-brand-col {
+    grid-column: 1 / -1 !important;
+  }
   .footer-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 2.5rem !important;
@@ -1994,7 +2065,7 @@ body { background: #F7F1E3; color: #1C1813; }
 }
 @media (max-width: 520px) {
   .footer-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr !important;
     gap: 2rem !important;
   }
 }
